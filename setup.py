@@ -10,7 +10,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='pyvesync-v2',
-    version='0.9.0',
+    version='0.9.1',
     description='pyvesync is a library to manage vesync API for Etekcity Smart Outlets',
     long_description=long_description,
     url='https://github.com/webdjoe/pyvesync-v2',
@@ -28,5 +28,5 @@ setup(
     packages=find_packages('src'),
     package_dir={'': "src"},
     zip_safe=False,
-    install_requires=['requests>=2.6.0'],
+    install_requires=['requests>=2.20.0'],
 )
