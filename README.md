@@ -32,10 +32,13 @@ manager = VeSync("USERNAME", "PASSWORD")
 manager.login()
 manager.update()
 
-# Get electricity metrics of devices
+# Print Device Info
 for switch in manager.devices:
-    print("Switch %s is currently using %s watts" % (switch.device_name, switch.get_power()))
-    print("It has used %skWh of electricity today" % (switch.get_kwh_today()))
+    if type(switch) is VeSyncSwitch:
+        print("Switch %s is currently using %s watts" % (switch.device_name, switch.get_power()))
+        print("It has used %skWh of electricity today" % (switch.get_kwh_today()))
+    elif type(switch) is VeSyncWallSwitch:
+        print("Wall Switch %s found" % (switch.device_name))
 
 # Turn on the first device
 my_switch = manager.devices[0]

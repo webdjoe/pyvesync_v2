@@ -110,16 +110,20 @@ class VeSync(object):
 
             response = self.call_api(DEVICEAPI, 'post', headers=self.get_headers(), json=self.get_device_body())
             devresponse = response['devices']
+
             if devresponse is not None and devresponse:
                 for device in devresponse:
                     if 'type' in device and 'wifi-switch' in device['type']:
                         device_list.append(VeSyncSwitch(device, self))
+                    elif 'deviceType' in device and 'ESWL01' in device['deviceType']:
+                        device_list.append(VeSyncWallSwitch(device, self))
 
             self.in_process = False
 
         return device_list
 
     def get_headers(self):
+
         return {'tk': self.tk, 'accountID': self.account_id}
 
     def get_device_body(self):
@@ -272,6 +276,28 @@ class VeSync(object):
         else:
             return False
 
+
+    def turn_on_wall_switch(self, uuid):
+        #Sends Json Payload to Turn On Switch
+        payload = {'accountID':self.account_id,'token':self.tk,'timeZone':'America/Phoenix','uuid':uuid,'status':'on'}
+        headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
+        response = self.call_api('/inwallswitch/v1/device/devicestatus/', 'put', headers=headers, json=payload) 
+        
+        if response is not None and response:
+            return True
+        else:
+            return False
+        
+    def turn_off_wall_switch(self, uuid):     
+        payload = {'accountID':self.account_id,'token':self.tk,'timeZone':'America/Phoenix','uuid':uuid,'status':'off'}
+        headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
+        response = self.call_api('/inwallswitch/v1/device/devicestatus/', 'put', headers=headers, json=payload) 
+       
+        if response is not None and response:
+            return True
+        else:
+            return False
+
     def update(self):
         """Fetch updated information about devices"""
 
@@ -303,6 +329,7 @@ class VeSync(object):
 
 
 class VeSyncSwitch(object):
+
     def __init__(self, details, manager):
         self.manager = manager
 
@@ -409,6 +436,96 @@ class VeSyncSwitch(object):
 
     def turn_on(self):
         if self.manager.turn_on(self.cid, self.uuid):
+            self.device_status = "on"
+
+    def update(self):
+        self.manager.update()
+
+
+class VeSyncWallSwitch(object):
+
+    def __init__(self, details, manager):
+        self.manager = manager
+
+        self.device_name = None
+        self.device_image = None
+        self.cid = None
+        self.device_status = None
+        self.connection_type = None
+        self.connection_status = None
+        self.device_type = None
+        self.configModule = None
+        self.uuid = None
+
+        self.configure(details)
+
+    def configure(self, details):
+        try:
+            self.device_name = details['deviceName']
+        except ValueError:
+            logger.error("cannot set device_name")
+
+        try:
+            self.device_image = details['deviceImg']
+        except ValueError:
+            logger.error("cannot set device_image")
+
+        try:
+            self.cid = details['cid']
+        except ValueError:
+            logger.error("cannot set cid")
+
+        try:
+            self.device_status = details['deviceStatus']
+        except ValueError:
+            logger.error("cannot set device_status")
+
+        try:
+            self.connection_type = details['connectionType']
+        except ValueError:
+            logger.error("cannot set connection_type")
+
+        try:
+            self.connection_status = details['connectionStatus']
+        except ValueError:
+            logger.error("cannot set connection_status")
+
+        try:
+            self.type = details['type']
+        except ValueError:
+            logger.error("Unable to set value for device type")
+
+        try:
+            self.device_type = details['deviceType']
+        except ValueError:
+            logger.error("Unable to set switch value for device type")
+
+        try:
+            self.uuid = details['uuid']
+        except ValueError:
+            logger.error('Unable to set uuid')
+
+        try:
+            self.configModule = details['configModule']
+        except ValueError:
+            logger.error('Unable to set configModule')
+
+    def set_config(self, switch):
+        self.device_name = switch.device_name
+        self.device_image = switch.device_image
+        self.device_status = switch.device_status
+        self.connection_type = switch.connection_type
+        self.connection_status = switch.connection_status
+        self.device_type = switch.device_type
+        self.configModule = switch.configModule
+        self.type = switch.type
+
+    def turn_off(self):
+        if self.manager.turn_off_wall_switch(self.uuid):
+            self.device_status = "off"
+
+    def turn_on(self):
+        if self.manager.turn_on_wall_switch(self.uuid):
             self.device_status = "on"
 
     def update(self):
