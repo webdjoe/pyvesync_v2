@@ -2,11 +2,7 @@ from setuptools import setup, find_packages
 from codecs import open
 from os import path
 
-
-here = path.abspath(path.dirname(__file__))
-
-with open(path.join(here, "README.md"), encoding='utf-8') as fh:
-    long_description = fh.read()
+long_description= 'Python library for vesync API to control etekcity 7A and 15A wifi smart outlets (round and rectangular) and wifi smart switches.  See the github page for further documentation: https://github.com/webdjoe/pyvesync_v2'
 
 setup(
     name='pyvesync_v2',

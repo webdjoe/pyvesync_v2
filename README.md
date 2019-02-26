@@ -8,8 +8,6 @@ It uses requests to call vesync server to control and monitor energy usage of th
 Based off of Mark Perdue's pyvesync library:
 https://github.com/markperdue/pyvesync
 
-I'm a beginner at this so any suggestions or constructive criticism is appreciated!
-
 Supported Devices
 ------------------------
 
