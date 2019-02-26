@@ -5,12 +5,12 @@ from os import path
 
 here = path.abspath(path.dirname(__file__))
 
-with open("README.md", "r") as fh:
+with open(path.join(here, "README.md"), encoding='utf-8') as fh:
     long_description = fh.read()
 
 setup(
     name='pyvesync_v2',
-    version='0.9.5',
+    version='0.9.6',
     description='Python library for vesync API for Etekcity Smart Outlets & switches',
     long_description=long_description,
     url='https://github.com/webdjoe/pyvesync_v2',
