@@ -1,13 +1,25 @@
-pyvesync-v2 
+pyvesync_v2
 ========
 
-
-pyvesync-v2 is a library to manage Etekcity Switches.
+pyvesync_v2 is a library to manage Etekcity Outlets and Light Switches.
 
 It uses requests to call vesync server to control and monitor energy usage of the older 7A and the newer 15A etekcity smart plugs
 
 Based off of Mark Perdue's pyvesync library:
 https://github.com/markperdue/pyvesync
+
+I'm a beginner at this so any suggestions or constructive criticism is appreciated!
+
+Supported Devices
+------------------------
+
+1. Etekcity 7A Smart Outlet
+![7AOUTLET](https://image.etekcity.com/thumb/201812/03/fad92688d93c56b4acc5dbefdbebf862.jpg-80-80.jpg)
+
+2. Etekcity 15A Smart Outlet with Night Light (Night light not currently supported ![15AOUTLET](https://image.etekcity.com/thumb/201809/20/9fd5479ae1cec57aa5d7caac9a986df8.jpg-80-80.jpg)
+
+3. Wifi Light Switch ![LightSwitch](https://image.etekcity.com/thumb/201812/03/0a4d255b08c621db6e3c52d139d6e484.jpg-80-80.jpg)
+
 
 
 Installation
@@ -16,7 +28,7 @@ Installation
 Install the latest version from pip:
 
 ```python
-pip install pyvesync-v2
+pip install pyvesync_v2
 ```
 
 
@@ -26,16 +38,19 @@ Usage
 To start with the module:
 
 ```python
-from pyvesync-v2.vesync import VeSync
+from pyvesync_v2.vesync import VeSync
 
 manager = VeSync("USERNAME", "PASSWORD")
 manager.login()
 manager.update()
 
-# Get electricity metrics of devices
+# Print Device Info
 for switch in manager.devices:
-    print("Switch %s is currently using %s watts" % (switch.device_name, switch.get_power()))
-    print("It has used %skWh of electricity today" % (switch.get_kwh_today()))
+    if type(switch) is VeSyncSwitch:
+        print("Switch %s is currently using %s watts" % (switch.device_name, switch.get_power()))
+        print("It has used %skWh of electricity today" % (switch.get_kwh_today()))
+    elif type(switch) is VeSyncWallSwitch:
+        print("Wall Switch %s found" % (switch.device_name))
 
 # Turn on the first device
 my_switch = manager.devices[0]
@@ -71,17 +86,11 @@ Device API
 
 `VeSyncSwitch.get_voltage()` - Gets current voltage reading
 
-TO DO's:
-These functions don't work with the new 15A devices, support is coming soon
----------------------------------------------------------------------------------------------------
-
 `VesyncSwitch.get_weekly_energy_total()` - Gets total energy reading for the past week
 
 `VesyncSwitch.get_monthly_energy_total()` - Gets total energy reading for the past month
 
 `VesyncSwitch.get_yearly_energy_total()` - Gets total energy reading for the past year
-
-`VesyncSwitch.get_week_daily_energy()` - Gets the list for daily energy usage over the week
 
 
 Notes
@@ -90,3 +99,7 @@ Notes
 VeSync switches controlled through the Etekcity api do not always respond to the initial request for turn_on() and turn_off(). Retrying once or twice as needed often works.  
 
 API calls and Responses are described in documentation
+
+To-Do's
+---------
+Develop Support for night light

@@ -9,11 +9,11 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(
-    name='pyvesync-v2',
-    version='0.9.1',
-    description='pyvesync is a library to manage vesync API for Etekcity Smart Outlets',
+    name='pyvesync_v2',
+    version='0.9.5',
+    description='Python library for vesync API for Etekcity Smart Outlets & switches',
     long_description=long_description,
-    url='https://github.com/webdjoe/pyvesync-v2',
+    url='https://github.com/webdjoe/pyvesync_v2',
     author='Joseph Trabulsy',
     author_email='webdjoe@gmail.com',
     license='MIT',
@@ -24,7 +24,7 @@ setup(
         'Natural Language :: English',
         'Programming Language :: Python :: 3.0',
     ],
-    keywords=['iot', 'vesync', 'etekcity', 'smart plug'],
+    keywords=['iot', 'vesync', 'etekcity', 'smart plug', 'smart switch'],
     packages=find_packages('src'),
     package_dir={'': "src"},
     zip_safe=False,
