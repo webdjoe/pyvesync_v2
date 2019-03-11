@@ -2,7 +2,7 @@ import hashlib
 import logging
 import time
 import requests
-import tzlocal
+
 
 
 logger = logging.getLogger(__name__)
@@ -58,10 +58,14 @@ class VeSync(object):
     #Get system timezone - if unable return UTC
     def time_zone(self):
         try:
-            tz = tzlocal.get_localzone().zone
-            if tz == 'local' or tz is None:
+            import tzlocal
+            try:
+                tz = tzlocal.get_localzone().zone
+                if tz == 'local' or tz is None:
+                    tz = 'UTC'
+            except:
                 tz = 'UTC'
-        except:
+        except ImportError:
             tz = 'UTC'
         return tz
 

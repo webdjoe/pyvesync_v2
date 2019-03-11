@@ -11,7 +11,7 @@ from homeassistant.const import (CONF_USERNAME, CONF_PASSWORD)
 import homeassistant.helpers.config_validation as cv
 
 
-REQUIREMENTS = ['pyvesync_v2==0.9.6']
+#REQUIREMENTS = ['pyvesync_v2==0.9.6']
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -23,7 +23,7 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
 
 def setup_platform(hass, config, add_entities, discovery_info=None):
     """Set up the VeSync switch platform."""
-    from pyvesync_v2.vesync import VeSync
+    from vesync import VeSync
 
     switches = []
 
