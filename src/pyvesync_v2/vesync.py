@@ -59,7 +59,7 @@ class VeSync(object):
     def time_zone(self):
         try:
             tz = tzlocal.get_localzone().zone
-            if !tz or tz == 'local':
+            if tz == 'local' or tz is None:
                 tz = 'UTC'
         except:
             tz = 'UTC'
