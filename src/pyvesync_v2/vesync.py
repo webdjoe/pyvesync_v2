@@ -330,7 +330,7 @@ class VeSync(object):
         elif devtype == 'ESW01-EU' and uuid is not None:
             response = self.get_10A_details(uuid)
         else:
-            response = None
+            response = 0
         if response is not None and response:
             if 'energy' in response and response['energy']:
                 watts = float(response['energy'])
@@ -348,7 +348,7 @@ class VeSync(object):
                     watts = float(self.calculate_hex(response['power']))
                     return watts
             else:
-                return None
+                return 0
 
         elif uuid is not None:
             if devtype == 'ESW15-USA':
@@ -356,15 +356,15 @@ class VeSync(object):
             elif devtype == 'ESW01-EU':
                 response = self.get_10A_status(uuid)
             else:
-                response = None
+                response = 0
             if response is not None and response:
                 if 'power' in response and response['power']:
                     watts = float(response['power'])
                     return watts
             else:
-                return None
+                return 0
         else:
-            return None
+            return 0
 
     def get_voltage(self, devtype, cid, uuid=None):
         """ Return Current Voltage """
@@ -383,7 +383,7 @@ class VeSync(object):
             elif devtype == 'ESW01-EU':
                 response = self.get_10A_details(uuid)
             else:
-                response = None
+                response = 0
             if response is not None and response:
                 if 'voltage' in response and response['voltage']:
                     voltage = float(response['voltage'])
@@ -406,12 +406,12 @@ class VeSync(object):
             elif devtype == 'ESW01-EU':
                 response = self.call_api('/10a/v1/device/energyweek', 'post', headers=self.get_headers(type='outlet'), json=body)
             else:
-                response = None
+                response = 0
         if response is not None and response:
             if 'totalEnergy' in response and response['totalEnergy']:
                 return response['totalEnergy']
 
-        return None
+        return 0
 
     def get_monthly_energy_total(self, devtype, cid, uuid=None):
         """Returns total energy usage over the month"""
@@ -424,12 +424,12 @@ class VeSync(object):
             elif devtype == 'ESW01-EU':
                 response = self.call_api('/10a/v1/device/energymonth', 'post', headers=self.get_headers(type='outlet'), json=body)
             else:
-                response = None
+                response = 0
         if response is not None and response:
             if 'totalEnergy' in response and response['totalEnergy']:
                 return response['totalEnergy']
 
-        return None
+        return 0
 
     def get_yearly_energy_total(self, devtype, cid, uuid=None):
         """Returns total energy usage over the year"""
@@ -442,12 +442,12 @@ class VeSync(object):
             elif devtype == 'ESW01-EU':
                 response = self.call_api('/10a/v1/device/energyyear', 'post', headers=self.get_headers(type='outlet'), json=body)
             else:
-                response = None
+                response = 0
         if response is not None and response:
             if 'totalEnergy' in response and response['totalEnergy']:
                 return response['totalEnergy']
 
-        return None
+        return 0
 
     def get_week_daily_energy(self, devtype, cid, uuid=None):
         """Returns daily energy usage over the week"""
@@ -460,12 +460,12 @@ class VeSync(object):
             elif devtype == 'ESW01-EU':
                 response = self.call_api('/10a/v1/device/energyweek', 'post', headers=self.get_headers(type='outlet'), json=body)
             else:
-                response = None
+                response = 0
         if response is not None and response:
             if 'data' in response and response['data']:
                 return response['data']
 
-        return None
+        return 0
 
     def update(self):
         """Fetch updated information about devices"""

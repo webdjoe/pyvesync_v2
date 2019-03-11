@@ -11,13 +11,12 @@ https://github.com/markperdue/pyvesync
 Supported Devices
 ------------------------
 
-1. Etekcity 7A Smart Outlet
-![7AOUTLET](https://image.etekcity.com/thumb/201812/03/fad92688d93c56b4acc5dbefdbebf862.jpg-80-80.jpg)
+1. Etekcity Voltson 7A Smart Outlet
+2. Etekcity VeSync 15A Smart Outlet with Night Light (Night light not currently supported)
+3. Etekcity VeSync in Wall Wifi Light Switch
+4. Etekcity 10A European Smart Outlet
 
-2. Etekcity 15A Smart Outlet with Night Light (Night light not currently supported ![15AOUTLET](https://image.etekcity.com/thumb/201809/20/9fd5479ae1cec57aa5d7caac9a986df8.jpg-80-80.jpg)
-
-3. Wifi Light Switch ![LightSwitch](https://image.etekcity.com/thumb/201812/03/0a4d255b08c621db6e3c52d139d6e484.jpg-80-80.jpg)
-
+<img src="https://images-na.ssl-images-amazon.com/images/I/61bIJjNei3L._SL1500_.jpg" width="100" alt="7A US Smart Outlet - wifi-switch-1.3"><img src="https://images-na.ssl-images-amazon.com/images/I/71jaBD%2BwihL._SX522_.jpg" width="100"><img src="https://m.media-amazon.com/images/S/aplus-media/vc/ef1e4357-ad51-4f45-87e6-f7c6a49b9d13._CR188,0,1125,1500_PT0_SX300__.jpg" width="100" alt="10A US Smart Outlet - ESW15-USA"><img src="https://images-na.ssl-images-amazon.com/images/I/61JcxlfJ7rL._SX425_.jpg" width="100" alt="Eu 10A Smart Outlet">
 
 
 Installation
@@ -44,11 +43,8 @@ manager.update()
 
 # Print Device Info
 for switch in manager.devices:
-    if type(switch) is VeSyncSwitch:
-        print("Switch %s is currently using %s watts" % (switch.device_name, switch.get_power()))
-        print("It has used %skWh of electricity today" % (switch.get_kwh_today()))
-    elif type(switch) is VeSyncWallSwitch:
-        print("Wall Switch %s found" % (switch.device_name))
+    print("Switch %s is currently using %s watts" % (switch.device_name, switch.get_power()))
+    print("It has used %skWh of electricity today" % (switch.get_kwh_today()))
 
 # Turn on the first device
 my_switch = manager.devices[0]
@@ -95,6 +91,8 @@ Notes
 -----
 
 VeSync switches controlled through the Etekcity api do not always respond to the initial request for turn_on() and turn_off(). Retrying once or twice as needed often works.  
+
+If using a home automation system, switches take 30 seconds to update state
 
 API calls and Responses are described in documentation
 
