@@ -23,7 +23,7 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
 
 def setup_platform(hass, config, add_entities, discovery_info=None):
     """Set up the VeSync switch platform."""
-    from vesync import VeSync
+    from custom_components.vesync.vesync import VeSync
 
     switches = []
 
