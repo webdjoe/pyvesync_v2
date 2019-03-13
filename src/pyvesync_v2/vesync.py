@@ -287,30 +287,6 @@ class VeSync(object):
         else:
             return False
 
-    #Power toggle function that can easily be expanded for different devices
-    #I think this can be eliminated
-    """def turn_onoff(self, cid, type, action, uuid=None):
-
-
-        if type == 'outlet':
-            if uuid is None:
-                response = self.get_7A_status(cid, action)
-            elif uuid is not None:
-                response = self.get_15A_status(uuid, action)
-
-        elif type == 'lightswitch':
-            if uuid is not None:
-                headers = self.get_headers(type='lightswitch')
-                body = self.device_body()
-                response = self.lightswitch_onoff(uuid, action)
-        else:
-            return False
-
-        if response is not None and response:
-            return True
-        else:
-            return False
-"""
     #Get active time outlets have been powered
     def get_active_time(self, devtype, cid, uuid=None):
         """Return active time of a device in minutes"""
