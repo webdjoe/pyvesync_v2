@@ -151,7 +151,7 @@ class VeSync(object):
         else:
             return None
 
-    def status_body(self, status, uuid):
+    def status_body(self, uuid, status):
         if status and uuid:
             body = {
                     'accountID':self.account_id,
@@ -202,11 +202,14 @@ class VeSync(object):
             head = self.get_headers(type='outlet')
             body = self.device_body()
             response = self.call_api(DEVICEAPI, 'post', headers=head, json=body)
-            devresponse = response['result']['list']
-            if devresponse is not None and devresponse:
-                for device in devresponse:
-                    if 'deviceType' in device and device['deviceType'] in SUPDEVICETYPE:
-                        device_list.append(VeSyncSwitch(device, self))
+            if response['result']['list']:
+                devresponse = response['result']['list']
+                if devresponse is not None and devresponse:
+                    for device in devresponse:
+                        if 'deviceType' in device and device['deviceType'] in SUPDEVICETYPE:
+                            device_list.append(VeSyncSwitch(device, self))
+            else:
+                logger.error('Cannot retrieve device list')
             self.in_process = False
 
         return device_list
@@ -358,7 +361,7 @@ class VeSync(object):
             if devtype == 'ESW15-USA':
                 response = self.get_15A_details(uuid)
             elif devtype == 'ESW01-EU':
-                response = self.get_10A_status(uuid)
+                response = self.get_10A_details(uuid)
             else:
                 response = 0
             if response is not None and response:
