@@ -4,15 +4,24 @@ import time
 import requests
 
 
+
 logger = logging.getLogger(__name__)
 
 API_BASE_URL = 'https://smartapi.vesync.com'
 API_RATE_LIMIT = 30
 API_TIMEOUT = 5
 
+#static header and body values
+ACCEPTLANGUAGE = 'en'
+APPVERSION = '2.5.1'
+PHONEBRAND = 'SM-N9005'
+PHONEOS = 'Android'
+USERTYPE = '1'
+MID = '1234567890123456' #Random 16 dig int
+
 #Login & Device List API Paths
-LOGINURL = '/vold/user/login'
-DEVICEAPI = '/platform/v1/app/devices'
+LOGINURL = '/cloud/v1/user/login'
+DEVICEAPI = '/cloud/v1/deviceManaged/devices'
 
 #Lightswitch Status API Path
 SWITCHSTATUS =  '/inwallswitch/v1/device/devicestatus/'
@@ -20,19 +29,19 @@ SWITCHSTATUS =  '/inwallswitch/v1/device/devicestatus/'
 #Outlet API Paths
 DEV15ASTATUS = '/15a/v1/device/devicestatus'
 DEV15ADETAILS = '/15a/v1/device/devicedetail'
-DEV7ADETAILS = '/v1/device/'
-DEV7ASTATUS = '/v1/wifi-switch-1.3/'
-
+DEV7ADETAILS = '/v1/device'
+DEV7ASTATUS = '/v1/wifi-switch-1.3'
+DEV10ADETAILS = '/10a/v1/device/devicedetail'
+DEV10ASTATUS = '/10a/v1/device/devicestatus'
 
 #Devices supported by script - deviceType returned in device list
 #Supported Outlets have energy data
-SUPOUTLETS = ['wifi-switch-1.3', 'ESW15-USA'] #Orignal 7A Round outlet & rectangular 15A with nightlight
+SUPOUTLETS = ['wifi-switch-1.3', 'ESW15-USA', 'ESW01-EU'] #Orignal 7A Round outlet & rectangular 15A with nightlight
 #Supported switches do not have energy data
 SUPSWITCHES = ['ESWL01', 'ESWL02'] #Switch and three-way switch
 SUPDEVICETYPE = SUPOUTLETS + SUPSWITCHES
 
-#mobileID required by new API - Random 16digit numbers work"""
-MID = '1234567890123456'
+
 
 class VeSync(object):
     def __init__(self, username, password):
@@ -42,10 +51,23 @@ class VeSync(object):
         self.account_id = None
         self.devices = None
         self.enabled = False
-
         self.update_interval = API_RATE_LIMIT
         self.last_update_ts = None
         self.in_process = False
+
+    #Get system timezone - if unable return UTC
+    def time_zone(self):
+        try:
+            import tzlocal
+            try:
+                tz = tzlocal.get_localzone().zone
+                if tz == 'local' or tz is None:
+                    tz = 'UTC'
+            except:
+                tz = 'UTC'
+        except ImportError:
+            tz = 'UTC'
+        return tz
 
     #Function to convert the voltage and power of 7A Outlets
     def calculate_hex(self, hex_string):
@@ -80,27 +102,93 @@ class VeSync(object):
     #Base header function
     def get_headers(self, type=None):
         if type is None or type == 'outlet':
-            return {'Content-Type':'application/json', 'Accept':'application/json' ,'tk': self.tk, 'accountID': self.account_id}
+            return {'Content-Type':'application/json',
+                    'tk': self.tk,
+                    'accountID': self.account_id,
+                    'accept-language':ACCEPTLANGUAGE,
+                    'tz': str(self.time_zone()),
+                    'appVersion':APPVERSION
+                    }
         elif type == 'lightswitch':
-            return {'Content-Type':'application/json', 'Accept':'application/json'}
+            return {'Content-Type':'application/json',
+                    'tk':self.tk,
+                    'tz':self.time_zone(),
+                    'accountID':self.account_id,
+                    'appVersion':APPVERSION
+                    }
 
-    #json payload builder function
+    #Payload for Get Devices Call
     def device_body(self):
-        return {'accountID': self.account_id, 'token': self.tk}
+        return {'accountID': self.account_id,
+                'token': self.tk,
+                'acceptLanguage':ACCEPTLANGUAGE,
+                'appVersion':APPVERSION,
+                'phoneBrand':PHONEBRAND,
+                'phoneOS':PHONEOS,
+                'timeZone':self.time_zone(),
+                'traceId':str(time.time()),
+                'method':'devices',
+                'pageNo':'1',
+                'pageSize':'50'
+                }
+    #Payload for 10A and 15A Outlet Details Call
+    def details_body(self, uuid):
+        if uuid is not None:
+            body = {
+                    'acceptLanguage':ACCEPTLANGUAGE,
+                    'accountID':self.account_id,
+                    'appVersion':APPVERSION,
+                    'method':'devicedetail',
+                    'mobileId':MID,
+                    'phoneBrand':PHONEBRAND,
+                    'phoneOS':PHONEOS,
+                    'timeZone':self.time_zone(),
+                    'token':self.tk,
+                    'traceId':str(time.time()),
+                    'uuid':uuid
+                    }
+            return body
+        else:
+            return None
+
+    def status_body(self, uuid, status):
+        if status and uuid:
+            body = {
+                    'accountID':self.account_id,
+                    'status': status,
+                    'token':self.tk,
+                    'uuid':uuid,
+                    'timeZone':self.time_zone()
+                    }
+            return body
+        else:
+            return None
 
     #Login function - return token and accountID
     def login(self):
         """Return True if log in request succeeds"""
         try:
-            jd = {'account': self.username, 'password': hashlib.md5(self.password.encode('utf-8')).hexdigest()}
+            jd = {'email': self.username,
+                  'password': hashlib.md5(self.password.encode('utf-8')).hexdigest(),
+                  'acceptLanguage':ACCEPTLANGUAGE,
+                  'appVersion':APPVERSION,
+                  'method':'login',
+                  'phoneBrand':PHONEBRAND,
+                  'phoneOS': PHONEOS,
+                  'timeZone':self.time_zone(),
+                  'traceId':str(time.time()),
+                  'userType':USERTYPE,
+                  'devToken':''
+                  }
         except ValueError:
             logger.error("Unable to read username and password")
             return False
         else:
             response = self.call_api(LOGINURL, 'post', json=jd)
-            if response is not None and response and 'tk' in response and 'accountID' in response:
-                self.tk = response['tk']
-                self.account_id = response['accountID']
+            resresult = response['result']
+            if resresult is not None and resresult and 'token' in resresult and 'accountID' in resresult:
+                self.tk = resresult['token']
+                self.account_id = resresult['accountID']
                 self.enabled = True
                 return True
             return False
@@ -111,30 +199,60 @@ class VeSync(object):
         device_list = []
         if self.enabled:
             self.in_process = True
-            response = self.call_api(DEVICEAPI, 'post', headers=self.get_headers(), json=self.device_body())
-            devresponse = response['devices']
-            if devresponse is not None and devresponse:
-                for device in devresponse:
-                    if 'deviceType' in device and device['deviceType'] in SUPDEVICETYPE:
-                        device_list.append(VeSyncSwitch(device, self))
+            head = self.get_headers(type='outlet')
+            body = self.device_body()
+            response = self.call_api(DEVICEAPI, 'post', headers=head, json=body)
+            if response['result']['list']:
+                devresponse = response['result']['list']
+                if devresponse is not None and devresponse:
+                    for device in devresponse:
+                        if 'deviceType' in device and device['deviceType'] in SUPDEVICETYPE:
+                            device_list.append(VeSyncSwitch(device, self))
+            else:
+                logger.error('Cannot retrieve device list')
             self.in_process = False
 
         return device_list
 
+    def get_10A_details(self, uuid):
+        if uuid is not None:
+            head = self.get_headers(type='outlet')
+            body = self.details_body(uuid)
+            response = self.call_api(DEV10ADETAILS, 'post', headers=head, json=body)
+        else:
+            return None
+        if response is not None:
+            return response
+        else:
+            return None
+
+    def get_10A_status(self, uuid, status):
+        if uuid is not None and status is not None:
+            head = self.get_headers(type='outlet')
+            body = self.status_body(uuid, status)
+            response = self.call_api(DEV10ASTATUS, 'put', headers=head, json=body)
+            if response is not None:
+                return response
+            else:
+                return None
+        else:
+            return None
+
     #Calls API to get device details for 15A Outlets (Rectangular)
     def get_15A_details(self, uuid):
         if uuid is not None:
-            body = self.device_body()
-            body['mobileID'] = MID
-            response = self.call_api(DEV15ADETAILS, 'post', headers=self.get_headers(type='outlet'), json=body)
+            head = self.get_headers(type='outlet')
+            body = self.details_body(uuid)
+            response = self.call_api(DEV15ADETAILS, 'post', headers=head, json=body)
             return response
         else:
             return None
 
     #Calls API to get device details for 7A outlets (Round)
     def get_7A_details(self, cid):
+        head = self.get_headers(type='outlet')
         if cid is not None:
-            response = self.call_api(DEV7ADETAILS + cid + '/detail', 'get', headers=self.get_headers(type='outlet'))
+            response = self.call_api(DEV7ADETAILS + '/' + cid + '/detail', 'get', headers=head)
             if response is not None:
                 return response
             else:
@@ -142,27 +260,25 @@ class VeSync(object):
 
     def get_15A_status(self, uuid, status=None):
         if uuid is not None and status is not None:
-            body = self.device_body()
-            body['uuid'] = uuid
-            body['status'] = status
-            response = self.call_api(DEV15ASTATUS, 'put', headers=self.get_headers(type='outlet'), json=body)
+            head = self.get_headers()
+            body = self.status_body(uuid, status)
+            response = self.call_api(DEV15ASTATUS, 'put', headers=head, json=body)
             return response
         else:
             return False
 
     def get_7A_status(self, cid, status=None):
         if cid and status is not None:
-            response = self.call_api(DEV7ASTATUS + cid + '/status/' + status, 'put', headers=self.get_headers(type='outlet'))
+            head = self.get_headers(type='outlet')
+            response = self.call_api(DEV7ASTATUS + '/' + cid + '/status/' + status, 'put', headers=head)
             return response
         else:
             return False
 
     def lightswitch_onoff(self, uuid, onoff):
         if uuid and onoff:
-            body = self.device_body()
-            body['uuid'] = uuid
-            body['status'] = onoff
-            response = self.call_api(SWITCHSTATUS, 'put', headers=self.get_headers('outlet'), json=body)
+            body = self.status_body(uuid, onoff)
+            response = self.call_api(SWITCHSTATUS, 'put', headers=self.get_headers(type='lightswitch'), json=body)
         else:
             return False
 
@@ -171,50 +287,33 @@ class VeSync(object):
         else:
             return False
 
-    #Power toggle function that can easily be expanded for different devices
-    def turn_onoff(self, cid, type, action, uuid=None):
-        """Return True if device has beeeen turned on"""
-
-        if type == 'outlet':
-            if uuid is None:
-                response = self.get_7A_status(cid, action)
-            elif uuid is not None:
-                response = self.get_15A_status(uuid, action)
-
-        elif type == 'lightswitch':
-            if uuid is not None:
-                headers = self.get_headers(type='lightswitch')
-                body = self.device_body()
-                response = self.lightswitch_onoff(uuid, action)
-        else:
-            return False
-
-        if response is not None and response:
-            return True
-        else:
-            return False
-
     #Get active time outlets have been powered
-    def get_active_time(self, cid, uuid=None):
+    def get_active_time(self, devtype, cid, uuid=None):
         """Return active time of a device in minutes"""
-        if uuid is None:
+        if devtype == 'wifi-switch-1.3' and uuid is None:
             response = self.get_7A_details(cid)
-        elif uuid is not None:
+        elif devtype == 'ESW15-USA' and uuid is not None:
             response = self.get_15A_details(uuid)
+        elif devtype == 'ESW01-EU' and uuid is not None:
+            response = self.get_10A_details(uuid)
         else:
-            response = None
+            return 0
         if response is not None and response:
             if 'activeTime' in response and response['activeTime']:
                 if response['activeTime'] >= 0:
                     return response['activeTime']
         return 0
 
-    def get_kwh_today(self, cid, uuid=None):
+    def get_kwh_today(self, devtype, cid, uuid=None):
         """Return total energy for day in kWh of a device"""
-        if uuid is None:
+        if devtype == 'wifi-switch-1.3' and uuid is None:
             response = self.get_7A_details(cid)
-        elif uuid is not None:
+        elif devtype == 'ESW15-USA' and uuid is not None:
             response = self.get_15A_details(uuid)
+        elif devtype == 'ESW01-EU' and uuid is not None:
+            response = self.get_10A_details(uuid)
+        else:
+            response = 0
         if response is not None and response:
             if 'energy' in response and response['energy']:
                 watts = float(response['energy'])
@@ -222,113 +321,134 @@ class VeSync(object):
         else:
             return 0
 
-    def get_power(self, cid, uuid=None):
+    def get_power(self, devtype, cid, uuid=None):
         """Return current power in watts of a device"""
-        if uuid is None:
+        if devtype == 'wifi-switch-1.3' and uuid is None:
             response = self.get_7A_details(cid)
+
             if response is not None and response:
                 if 'power' in response and response['power']:
                     watts = float(self.calculate_hex(response['power']))
                     return watts
             else:
-                return None
+                return 0
 
         elif uuid is not None:
-            response = self.get_15A_details(uuid)
+            if devtype == 'ESW15-USA':
+                response = self.get_15A_details(uuid)
+            elif devtype == 'ESW01-EU':
+                response = self.get_10A_details(uuid)
+            else:
+                response = 0
             if response is not None and response:
                 if 'power' in response and response['power']:
                     watts = float(response['power'])
                     return watts
             else:
-                return None
+                return 0
         else:
-            return None
+            return 0
 
-    def get_voltage(self, cid, uuid=None):
+    def get_voltage(self, devtype, cid, uuid=None):
         """ Return Current Voltage """
-        if uuid is None:
+        if devtype == 'wifi-switch-1.3' and uuid is None:
             response = self.get_7A_details(cid)
             if response is not None and response:
                 if 'voltage' in response and response['voltage']:
                     voltage = self.calculate_hex(response['voltage'])
                     return voltage
             else:
-                return None
+                return 0
 
         elif uuid is not None:
-            response = self.get_15A_details(uuid)
+            if devtype == 'ESW15-USA':
+                response = self.get_15A_details(uuid)
+            elif devtype == 'ESW01-EU':
+                response = self.get_10A_details(uuid)
+            else:
+                response = 0
             if response is not None and response:
                 if 'voltage' in response and response['voltage']:
                     voltage = float(response['voltage'])
                     return voltage
             else:
-                return None
+                return 0
 
         else:
-            return None
+            return 0
 
-    def get_weekly_energy_total(self, cid, uuid=None):
+    def get_weekly_energy_total(self, devtype, cid, uuid=None):
         """Returns the total weekly energy usage  """
 
-        if uuid is None:
+        if devtype== 'wifi-switch-1.3' and uuid is None:
             response = self.call_api('/v1/device/' + cid + '/energy/week', 'get', headers=self.get_headers(type='outlet'))
-
-        elif uuid:
-            body = self.device_body()
-            body['uuid'] = uuid
-            response = self.call_api('/15a/v1/device/energyweek', 'post', headers=self.get_headers(type='outlet'), json=body)
-
+        elif uuid is not None:
+            body = self.details_body(uuid)
+            if devtype == 'ESW15-USA':
+                response = self.call_api('/15a/v1/device/energyweek', 'post', headers=self.get_headers(type='outlet'), json=body)
+            elif devtype == 'ESW01-EU':
+                response = self.call_api('/10a/v1/device/energyweek', 'post', headers=self.get_headers(type='outlet'), json=body)
+            else:
+                response = 0
         if response is not None and response:
             if 'totalEnergy' in response and response['totalEnergy']:
                 return response['totalEnergy']
 
-        return None
+        return 0
 
-    def get_monthly_energy_total(self, cid, uuid=None):
+    def get_monthly_energy_total(self, devtype, cid, uuid=None):
         """Returns total energy usage over the month"""
         if uuid is None:
             response = self.call_api('/v1/device/' + cid + '/energy/month', 'get', headers=self.get_headers(type='outlet'))
         elif uuid is not None:
-            body = self.device_body()
-            body['uuid'] = uuid
-            response = self.call_api('/15a/v1/device/energymonth', 'post', headers=self.get_headers(type='outlet'), json=body)
-
+            body = self.details_body(uuid)
+            if devtype == 'ESW15-USA':
+                response = self.call_api('/15a/v1/device/energymonth', 'post', headers=self.get_headers(type='outlet'), json=body)
+            elif devtype == 'ESW01-EU':
+                response = self.call_api('/10a/v1/device/energymonth', 'post', headers=self.get_headers(type='outlet'), json=body)
+            else:
+                response = 0
         if response is not None and response:
             if 'totalEnergy' in response and response['totalEnergy']:
                 return response['totalEnergy']
 
-        return None
+        return 0
 
-    def get_yearly_energy_total(self, cid, uuid=None):
+    def get_yearly_energy_total(self, devtype, cid, uuid=None):
         """Returns total energy usage over the year"""
-        if uuid is None:
+        if devtype == 'wifi-switch-1.3' and uuid is None:
             response = self.call_api('/v1/device/' + cid + '/energy/year', 'get', headers=self.get_headers(type='outlet'))
         elif uuid is not None:
-            body = self.device_body()
-            body['uuid'] = uuid
-            response = self.call_api('/15a/v1/device/energyyear', 'post', headers=self.get_headers(type='outlet'), json=body)
-
+            body = self.details_body(uuid)
+            if devtype == 'ESW15-USA':
+                response = self.call_api('/15a/v1/device/energyyear', 'post', headers=self.get_headers(type='outlet'), json=body)
+            elif devtype == 'ESW01-EU':
+                response = self.call_api('/10a/v1/device/energyyear', 'post', headers=self.get_headers(type='outlet'), json=body)
+            else:
+                response = 0
         if response is not None and response:
             if 'totalEnergy' in response and response['totalEnergy']:
                 return response['totalEnergy']
 
-        return None
+        return 0
 
-    def get_week_daily_energy(self, cid, uuid=None):
+    def get_week_daily_energy(self, devtype, cid, uuid=None):
         """Returns daily energy usage over the week"""
-        if uuid is None:
+        if devtype == 'wifi-switch-1.3' and uuid is None:
             response = self.call_api('/v1/device/' + cid + '/energy/week', 'get', headers=self.get_headers(type='outlet'))
-
         elif uuid:
-            body = self.device_body()
-            body['uuid'] = uuid
-            response = self.call_api('/15a/v1/device/energyweek', 'post', headers=self.get_headers(type='outlet'), json=body)
-
+            body = self.details_body(uuid)
+            if devtype == 'ESW15-USA':
+                response = self.call_api('/15a/v1/device/energyweek', 'post', headers=self.get_headers(type='outlet'), json=body)
+            elif devtype == 'ESW01-EU':
+                response = self.call_api('/10a/v1/device/energyweek', 'post', headers=self.get_headers(type='outlet'), json=body)
+            else:
+                response = 0
         if response is not None and response:
             if 'data' in response and response['data']:
                 return response['data']
 
-        return None
+        return 0
 
     def update(self):
         """Fetch updated information about devices"""
@@ -438,28 +558,28 @@ class VeSyncSwitch(object):
                 self.devtype = None
 
     def get_active_time(self):
-        return self.manager.get_active_time(self.cid, self.uuid)
+        return self.manager.get_active_time(self.device_type, self.cid, self.uuid)
 
     def get_kwh_today(self):
-        return self.manager.get_kwh_today(self.cid, self.uuid)
+        return self.manager.get_kwh_today(self.device_type, self.cid, self.uuid)
 
     def get_power(self):
-        return self.manager.get_power(self.cid, self.uuid)
+        return self.manager.get_power(self.device_type, self.cid, self.uuid)
 
     def get_voltage(self):
-        return self.manager.get_voltage(self.cid, self.uuid)
+        return self.manager.get_voltage(self.device_type, self.cid, self.uuid)
 
     def get_monthly_energy_total(self):
-        return self.manager.get_monthly_energy_total(self.cid, self.uuid)
+        return self.manager.get_monthly_energy_total(self.device_type, self.cid, self.uuid)
 
     def get_weekly_energy_total(self):
-        return self.manager.get_weekly_energy_total(self.cid, self.uuid)
+        return self.manager.get_weekly_energy_total(self.device_type, self.cid, self.uuid)
 
     def get_yearly_energy_total(self):
-        return self.manager.get_yearly_energy_total(self.cid, self.uuid)
+        return self.manager.get_yearly_energy_total(self.device_type, self.cid, self.uuid)
 
     def get_week_daily_energy(self):
-        return self.manager.get_week_daily_energy(self.cid, self.uuid)
+        return self.manager.get_week_daily_energy(self.device_type, self.cid, self.uuid)
 
     def set_config(self, switch):
         self.device_name = switch.device_name
@@ -473,11 +593,27 @@ class VeSyncSwitch(object):
         self.devtype = switch.devtype
 
     def turn_off(self):
-        if self.manager.turn_onoff(cid=self.cid, type=self.devtype, action='off', uuid=self.uuid):
+        if self.device_type == 'ESW15-USA':
+            result = self.manager.get_15A_status(self.uuid, status='off')
+        elif self.device_type == 'wifi-switch-1.3':
+            result = self.manager.get_7A_status(self.cid, status='off')
+        elif self.device_type == 'ESW01-EU':
+            result = self.manager.get_10A_status(self.uuid, status='off')
+        elif self.device_type == 'ESWL01' or self.device_type == 'ESWL02':
+            result = self.manager.lightswitch_onoff(self.uuid, onoff='off')
+        if result:
             self.device_status = "off"
 
     def turn_on(self):
-        if self.manager.turn_onoff(cid=self.cid, type=self.devtype, action='on', uuid=self.uuid):
+        if self.device_type == 'ESW15-USA':
+            result = self.manager.get_15A_status(self.uuid, status='on')
+        elif self.device_type == 'wifi-switch-1.3':
+            result = self.manager.get_7A_status(self.cid, status='on')
+        elif self.device_type == 'ESW01-EU':
+            result = self.manager.get_10A_status(self.uuid, status='on')
+        elif self.device_type == 'ESWL01' or self.device_type == 'ESWL02':
+            result = self.manager.lightswitch_onoff(self.uuid, onoff='on')
+        if result:
             self.device_status = "on"
 
     def update(self):
