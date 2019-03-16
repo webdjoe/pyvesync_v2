@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 from codecs import open
 from os import path
 
-long_description= 'Python library for vesync API to control etekcity US 7A and 15A and European 10A wifi smart outlets (round and rectangular) and wifi smart switches.  See the github page for further documentation: https://github.com/webdjoe/pyvesync_v2'
+long_description= 'Python library for vesync API to control etekcity US 7A and 15A and European 10A wifi smart outlets (round and rectangular) and in wall wifi smart switches.  See the github page for further documentation: https://github.com/webdjoe/pyvesync_v2'
 
 setup(
     name='pyvesync_v2',
