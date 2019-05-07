@@ -1,3 +1,7 @@
+THIS LIBRARY IS NO LONGER MAINTAINED - THE CURRENT VERSION IS LOCATED:
+https://github.com/markperdue/pyvesync
+
+
 pyvesync_v2
 ========
 
@@ -5,8 +9,6 @@ pyvesync_v2 is a library to manage Etekcity Outlets and Light Switches.
 
 It uses requests to call vesync server to control and monitor energy usage of the older 7A and the newer 15A etekcity smart plugs
 
-Based off of Mark Perdue's pyvesync library:
-https://github.com/markperdue/pyvesync
 
 Supported Devices
 ------------------------
