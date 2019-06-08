@@ -6,7 +6,7 @@ long_description= 'Python library for vesync API to control etekcity US 7A and 1
 
 setup(
     name='pyvesync_v2',
-    version='0.9.7',
+    version='0.9.8',
     description='Python library for vesync API for Etekcity Smart Outlets & switches',
     long_description=long_description,
     url='https://github.com/webdjoe/pyvesync_v2',
