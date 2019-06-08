@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 API_BASE_URL = 'https://smartapi.vesync.com'
 API_RATE_LIMIT = 30
-API_TIMEOUT = 5
+API_TIMEOUT = 10
 
 #static header and body values
 ACCEPTLANGUAGE = 'en'
