@@ -1,17 +1,20 @@
 from setuptools import setup, find_packages
-from codecs import open
 from os import path
 
-long_description= 'Python library for vesync API to control etekcity US 7A and 15A and European 10A wifi smart outlets (round and rectangular) and in wall wifi smart switches.  See the github page for further documentation: https://github.com/webdjoe/pyvesync_v2'
+
+this_directory = path.abspath(path.dirname(__file__))
+with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
+    long_description = f.read()
 
 setup(
     name='pyvesync_v2',
-    version='0.9.8',
-    description='Python library for vesync API for Etekcity Smart Outlets & switches',
+    version='2.0.0',
+    description='pyvesync_v2 is a library to manage Etekcity Switches',
     long_description=long_description,
+    long_description_content_type='text/markdown',
     url='https://github.com/webdjoe/pyvesync_v2',
-    author='Joseph Trabulsy',
-    author_email='webdjoe@gmail.com',
+    author='Mark Perdue/Joe Trabulsy',
+    author_email='jtrabulsy@gmail.com',
     license='MIT',
     classifiers=[
         'License :: OSI Approved :: MIT License',
@@ -20,13 +23,9 @@ setup(
         'Natural Language :: English',
         'Programming Language :: Python :: 3.0',
     ],
-    keywords=['iot', 'vesync', 'etekcity', 'smart plug', 'smart switch'],
+    keywords=['iot', 'vesync', 'etekcity', 'levoit'],
     packages=find_packages('src'),
     package_dir={'': "src"},
     zip_safe=False,
-    install_requires=[
-        'requests>=2.20.0',
-        'pytz',
-        'tzlocal'
-    ],
+    install_requires=['requests>=2.20.0'],
 )

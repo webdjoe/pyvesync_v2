@@ -1,4 +1,12 @@
 *.DS_Store
 build/*
 dist/*
-src/pyvesync_v2.egg-info/*
+src/pyvesync.egg-info/*
+*.vscode
+**/*.pyc
+.coverage
+htmlcov/
+.pytest_cache
+*__pycache__
+cov_html/*
+cov_html/
