@@ -1,3 +1,5 @@
+"""VeSync API Device Libary."""
+
 import logging
 import time
 import re
@@ -18,9 +20,11 @@ DEFAULT_ENER_UP_INT = 21600
 
 
 class VSFactory(object):
+    """Initilize device from API response."""
 
     @staticmethod
     def getDevice(device_type, config, manager):
+        """Return initilized device from API response."""
         if device_type == 'wifi-switch-1.3':
             return VeSyncOutlet7A(config, manager)
         elif device_type in ['ESW03-USA', 'ESW01-EU']:
@@ -44,7 +48,10 @@ class VSFactory(object):
 
 
 class VeSync(object):
+    """VeSync API functions."""
+
     def __init__(self, username, password, time_zone=DEFAULT_TZ):
+        """Initilize VeSync class with username, password and time zone."""
         self.username = username
         self.password = password
         self.token = None
@@ -79,13 +86,13 @@ class VeSync(object):
 
     @energy_update_interval.setter
     def energy_update_interval(self, new_energy_update):
-        """"Set energy update interval in seconds."""
+        """Set energy update interval in seconds."""
         if new_energy_update > 0:
             self._energy_update_interval = new_energy_update
 
     @staticmethod
     def remove_dev_test(device, new_list):
-        """Tests if device should be removed - False = Remove."""
+        """Test if device should be removed - False = Remove."""
         if isinstance(new_list, list) and device.cid:
             for item in new_list:
                 device_found = False
@@ -103,7 +110,7 @@ class VeSync(object):
                 return True
 
     def add_dev_test(self, new_dev):
-        """Tests if new device should be added - True = Add"""
+        """Test if new device should be added - True = Add."""
         if 'cid' in new_dev:
             devices = [self.outlets, self.bulbs, self.switches, self.fans]
             was_found = False
@@ -119,7 +126,7 @@ class VeSync(object):
                 return False
 
     def process_devices(self, devices) -> tuple:
-        """Call VSFactory to instantiate device classes"""
+        """Call VSFactory to instantiate device classes."""
         outlets = []
         switches = []
         fans = []
@@ -182,7 +189,7 @@ class VeSync(object):
         return outlets, switches, fans, bulbs
 
     def get_devices(self) -> tuple:
-        """Return tuple listing outlets, switches, and fans of devices"""
+        """Return tuple listing outlets, switches, and fans of devices."""
         outlets = []
         switches = []
         fans = []
@@ -214,7 +221,7 @@ class VeSync(object):
         return (outlets, switches, fans, bulbs)
 
     def login(self) -> bool:
-        """Return True if log in request succeeds"""
+        """Return True if log in request succeeds."""
         user_check = isinstance(self.username, str) and len(self.username) > 0
         pass_check = isinstance(self.password, str) and len(self.password) > 0
 
@@ -244,6 +251,7 @@ class VeSync(object):
         return False
 
     def device_time_check(self) -> bool:
+        """Test if update interval has been exceeded."""
         if self.last_update_ts is None or (
                 time.time() - self.last_update_ts) > self.update_interval:
             return True
@@ -251,8 +259,7 @@ class VeSync(object):
             return False
 
     def update(self):
-        """Fetch updated information about devices"""
-
+        """Fetch updated information about devices."""
         if self.device_time_check():
 
             if not self.in_process:
@@ -270,12 +277,12 @@ class VeSync(object):
                 self.last_update_ts = time.time()
 
     def update_energy(self, bypass_check=False):
-        """Fetch updated energy information about devices"""
+        """Fetch updated energy information about devices."""
         for outlet in self.outlets:
             outlet.update_energy(bypass_check)
 
     def update_all_devices(self):
-        """Run get_details() for each device"""
+        """Run get_details() for each device."""
         dev_list = [self.outlets, self.fans, self.bulbs, self.switches]
         for dev in chain(*dev_list):
             dev.get_details()

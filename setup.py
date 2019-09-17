@@ -1,3 +1,5 @@
+"""pyvesync_v2 setup script."""
+
 from setuptools import setup, find_packages
 from os import path
 

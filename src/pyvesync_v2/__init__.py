@@ -1,3 +1,5 @@
+"""VeSync API Library."""
+
 # pylint: skip-file
 # flake8: noqa
 from .vesync import VeSync

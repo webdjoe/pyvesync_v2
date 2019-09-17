@@ -1,3 +1,5 @@
+"""Helper functions for VeSync API."""
+
 import hashlib
 import logging
 import time
@@ -19,9 +21,11 @@ USER_TYPE = '1'
 
 
 class Helpers:
+    """VeSync Helper Functions."""
 
     @staticmethod
     def req_headers(manager):
+        """Build header for api requests."""
         headers = {
             'accept-language': 'en',
             'accountId': manager.account_id,
@@ -34,6 +38,7 @@ class Helpers:
 
     @staticmethod
     def req_body_base(manager):
+        """Return universal keys for body of api requests."""
         return {
             'timeZone': manager.time_zone,
             'acceptLanguage': 'en'
@@ -41,6 +46,7 @@ class Helpers:
 
     @staticmethod
     def req_body_auth(manager):
+        """Keys for authenticating api requests."""
         return {
             'accountID': manager.account_id,
             'token': manager.token
@@ -48,6 +54,7 @@ class Helpers:
 
     @staticmethod
     def req_body_details():
+        """Detail keys for api requests."""
         return {
             'appVersion': APP_VERSION,
             'phoneBrand': PHONE_BRAND,
@@ -57,6 +64,7 @@ class Helpers:
 
     @classmethod
     def req_body(cls, manager, type_):
+        """Builder for body of api requests."""
         body = {}
 
         if type_ == 'login':
@@ -134,7 +142,7 @@ class Helpers:
 
     @staticmethod
     def calculate_hex(hex_string):
-        """Credit for conversion to itsnotlupus/vesync_wsproxy"""
+        """Credit for conversion to itsnotlupus/vesync_wsproxy."""
         hex_conv = hex_string.split(':')
         converted_hex = (int(hex_conv[0], 16) + int(hex_conv[1], 16))/8192
 
@@ -142,11 +150,13 @@ class Helpers:
 
     @staticmethod
     def hash_password(string):
+        """Encode password."""
         return hashlib.md5(string.encode('utf-8')).hexdigest()
 
     @staticmethod
     def call_api(api: str, method: str,
                  json: dict = None, headers: dict = None):
+        """Make API calls by passing endpoint, header and body."""
         response = None
         status_code = None
 
@@ -182,6 +192,7 @@ class Helpers:
 
     @staticmethod
     def check_response(resp: dict, call: str) -> bool:
+        """Check API responses."""
         common_resp = [
             'get_devices', '15a_toggle',
             '15a_energy', 'walls_detail', 'walls_toggle',
@@ -244,6 +255,7 @@ class Helpers:
 
     @staticmethod
     def build_details_dict(r: dict) -> dict:
+        """Build details dictionary from API response."""
         return {
             'active_time': r.get('activeTime', 0),
             'energy': r.get('energy', 0),
@@ -256,6 +268,7 @@ class Helpers:
 
     @staticmethod
     def build_energy_dict(r: dict) -> dict:
+        """Build energy dictionary from API response."""
         return {
             'energy_consumption_of_today': r.get(
                 'energyConsumptionOfToday', 0),
@@ -268,6 +281,7 @@ class Helpers:
 
     @staticmethod
     def build_config_dict(r: dict) -> dict:
+        """Build configuration dictionary from API response."""
         if r.get("theshold") is not None:
             threshold = r.get('threshold')
         else:

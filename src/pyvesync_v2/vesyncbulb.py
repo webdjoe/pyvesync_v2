@@ -1,3 +1,5 @@
+"""Etekcity Smart Light Bulb."""
+
 import logging
 import json
 from abc import ABCMeta, abstractmethod
@@ -15,16 +17,18 @@ feature_dict = {
 
 
 def pct_to_kelvin(pct, max_k=6500, min_k=2700):
-    """Convert percent to kelvin"""
+    """Convert percent to kelvin."""
     kelvin = ((max_k - min_k) * pct / 100) + min_k
     return kelvin
 
 
 class VeSyncBulb(VeSyncBaseDevice):
     """Base class for VeSync Bulbs."""
+
     __metaclass__ = ABCMeta
 
     def __init__(self, details, manager):
+        """Initialize VeSync smart bulb base class."""
         super(VeSyncBulb, self).__init__(details, manager)
         self._brightness = None
         self._color_temp = None
@@ -37,13 +41,13 @@ class VeSyncBulb(VeSyncBaseDevice):
 
     @property
     def color_temp_kelvin(self):
-        """Return Color Temp of bulb if supported in Kelvin"""
+        """Return Color Temp of bulb if supported in Kelvin."""
         if self.color_temp_feature and self._color_temp is not None:
             return int(pct_to_kelvin(self._color_temp))
 
     @property
     def color_temp_pct(self):
-        """Return color temperature of bulb in percent"""
+        """Return color temperature of bulb in percent."""
         if self.color_temp_feature and self._color_temp is not None:
             return int(self._color_temp)
 
@@ -74,11 +78,11 @@ class VeSyncBulb(VeSyncBaseDevice):
 
     @abstractmethod
     def toggle(self, status: int):
-        """Toggle vesync lightbulb"""
+        """Toggle vesync lightbulb."""
 
     @abstractmethod
     def get_config(self):
-        """Call api to get configuration details and firmware"""
+        """Call api to get configuration details and firmware."""
 
     def turn_on(self):
         """Turn on vesync bulbs."""
@@ -97,10 +101,11 @@ class VeSyncBulb(VeSyncBaseDevice):
             return False
 
     def update(self):
-        """Update bulb details"""
+        """Update bulb details."""
         self.get_details()
 
     def display(self):
+        """Return formatted bulb info to stdout."""
         super(VeSyncBulb, self).display()
         if self.connection_status == 'online':
             if self.dimmable_feature:
@@ -109,6 +114,7 @@ class VeSyncBulb(VeSyncBaseDevice):
                 print("{:.<17} {} {}".format(line[0], line[1], line[2]))
 
     def displayJSON(self):
+        """Return bulb device info in JSON format."""
         sup = super().displayJSON()
         supVal = json.loads(sup)
         if self.connection_status == 'online':
@@ -121,11 +127,14 @@ class VeSyncBulb(VeSyncBaseDevice):
 
 class VeSyncBulbESL100(VeSyncBulb):
     """Object to hold VeSync ESL100 light bulb."""
+
     def __init__(self, details, manager):
+        """Initialize Etekcity ESL100 Dimmable Bulb."""
         super(VeSyncBulbESL100, self).__init__(details, manager)
         self.details = {}
 
     def get_details(self):
+        """Get details of dimmable bulb."""
         body = helpers.req_body(self.manager, 'devicedetail')
         body['uuid'] = self.uuid
         r, _ = helpers.call_api(
@@ -143,6 +152,7 @@ class VeSyncBulbESL100(VeSyncBulb):
             logger.debug('Error getting {} details'.format(self.device_name))
 
     def get_config(self):
+        """Get configuration of dimmable bulb."""
         body = helpers.req_body(self.manager, 'devicedetail')
         body['method'] = 'configurations'
         body['uuid'] = self.uuid
@@ -157,7 +167,7 @@ class VeSyncBulbESL100(VeSyncBulb):
             self.config = helpers.build_config_dict(r)
 
     def toggle(self, status):
-        """Toggle vesync bulb."""
+        """Toggle dimmable bulb."""
         body = helpers.req_body(self.manager, 'devicestatus')
         body['uuid'] = self.uuid
         body['status'] = status
@@ -174,7 +184,7 @@ class VeSyncBulbESL100(VeSyncBulb):
             return False
 
     def set_brightness(self, brightness: int):
-        """Set brightness of vesync bulb"""
+        """Set brightness of dimmable bulb."""
         if self.dimmable_feature:
             if brightness > 0 and brightness <= 100:
                 body = helpers.req_body(self.manager, 'devicestatus')
@@ -199,15 +209,18 @@ class VeSyncBulbESL100(VeSyncBulb):
                 logger.warning('Invalid brightness')
                 return False
         else:
-            logger.debug('{} is not dimmable - ', self.device_name)
+            logger.debug('%s is not dimmable', self.device_name)
 
 
 class VeSyncBulbESL100CW(VeSyncBulb):
-    """VeSync Tunable and Dimmable White Bulb"""
+    """VeSync Tunable and Dimmable White Bulb."""
+
     def __init__(self, details, manager):
-        super(VeSyncBulb, self).__init__(details, manager)
+        """Initialize Etekcity Tunable white bulb."""
+        super().__init__(details, manager)
 
     def get_details(self):
+        """Get details of tunable bulb."""
         body = helpers.req_body(self.manager, 'bypass')
         body['cid'] = self.cid
         body['jsonCmd'] = {'getLightStatus': 'get'}
@@ -237,6 +250,7 @@ class VeSyncBulbESL100CW(VeSyncBulb):
             logger.debug('Error getting {} details'.format(self.device_name))
 
     def get_config(self):
+        """Get configuration and firmware info of tunable bulb."""
         body = helpers.req_body(self.manager, 'bypass_config')
         body['uuid'] = self.uuid
 
@@ -250,7 +264,7 @@ class VeSyncBulbESL100CW(VeSyncBulb):
             self.config = helpers.build_config_dict(r)
 
     def toggle(self, status):
-        """Toggle vesync bulb."""
+        """Toggle tunable bulb."""
         body = helpers.req_body(self.manager, 'bypass')
         body['cid'] = self.cid
         body['configModule'] = self.config_module
@@ -272,7 +286,7 @@ class VeSyncBulbESL100CW(VeSyncBulb):
         return False
 
     def set_brightness(self, brightness: int) -> bool:
-        """Set brightness of vesync bulb"""
+        """Set brightness of tunable bulb."""
         if self.dimmable_feature:
             if brightness > 0 and brightness <= 100:
                 body = helpers.req_body(self.manager, 'bypass')
@@ -303,11 +317,11 @@ class VeSyncBulbESL100CW(VeSyncBulb):
             else:
                 logger.warning('Invalid brightness')
         else:
-            logger.debug('{} is not dimmable - ', self.device_name)
+            logger.debug('%s is not dimmable', self.device_name)
         return False
 
     def set_color_temp(self, color_temp: int) -> bool:
-        """Set Color Temperature of VeSync Bulb in pct (1 - 100)"""
+        """Set Color Temperature of Bulb in pct (1 - 100)."""
         if color_temp < 0 or color_temp > 100:
             logger.debug('Invalid color temperature - only between 0 and 100')
             return False

@@ -1,3 +1,5 @@
+"""VeSync API for controling fans and purifiers."""
+
 import json
 from pyvesync_v2.vesyncbasedevice import VeSyncBaseDevice
 from pyvesync_v2.helpers import Helpers as helpers
@@ -7,14 +9,16 @@ logger = logging.getLogger(__name__)
 
 
 class VeSyncAir131(VeSyncBaseDevice):
+    """Levoit Air Purifier Class."""
 
     def __init__(self, details, manager):
+        """Initilize air purifier class."""
         super(VeSyncAir131, self).__init__(details, manager)
 
         self.details = {}
 
     def get_details(self):
-        """Build details dictionary"""
+        """Build details dictionary."""
         body = helpers.req_body(self.manager, 'devicedetail')
         body['uuid'] = self.uuid
         head = helpers.req_headers(self.manager)
@@ -39,6 +43,7 @@ class VeSyncAir131(VeSyncBaseDevice):
             logger.debug('Error getting {} details'.format(self.device_name))
 
     def get_config(self):
+        """Get configuration info for air purifier."""
         body = helpers.req_body(self.manager, 'devicedetail')
         body['method'] = 'configurations'
         body['uuid'] = self.uuid
@@ -54,17 +59,17 @@ class VeSyncAir131(VeSyncBaseDevice):
 
     @property
     def active_time(self):
-        """Return total time active"""
+        """Return total time active in minutes."""
         return self.details.get('active_time', 0)
 
     @property
     def fan_level(self):
-        """Get current fan level (1-3)"""
+        """Get current fan level (1-3)."""
         return self.details.get('level', 0)
 
     @property
     def filter_life(self):
-        """Get percentage of filter life remaining"""
+        """Get percentage of filter life remaining."""
         try:
             return self.details['filter_life'].get('percent', 0)
         except KeyError:
@@ -72,16 +77,16 @@ class VeSyncAir131(VeSyncBaseDevice):
 
     @property
     def air_quality(self):
-        """Get Air Quality"""
+        """Get Air Quality."""
         return self.details.get('air_quality', 'unknown')
 
     @property
     def screen_status(self):
-        """Return Screen status (on/off)"""
+        """Return Screen status (on/off)."""
         return self.details.get('screen_status', 'unknown')
 
     def turn_on(self):
-        """Turn Air Purifier on"""
+        """Turn Air Purifier on."""
         if self.device_status != 'on':
             body = helpers.req_body(self.manager, 'devicestatus')
             body['uuid'] = self.uuid
@@ -103,7 +108,7 @@ class VeSyncAir131(VeSyncBaseDevice):
                 return False
 
     def turn_off(self):
-        """Turn Air Purifier Off"""
+        """Turn Air Purifier Off."""
         if self.device_status == 'on':
             body = helpers.req_body(self.manager, 'devicestatus')
             body['uuid'] = self.uuid
@@ -125,20 +130,23 @@ class VeSyncAir131(VeSyncBaseDevice):
                 return False
 
     def auto_mode(self):
-        """Set mode to auto"""
+        """Set mode to auto."""
         return self.mode_toggle('auto')
 
     def manual_mode(self):
-        """Set mode to manual"""
+        """Set mode to manual."""
         return self.mode_toggle('manual')
 
     def sleep_mode(self):
-        """Set sleep mode to on"""
+        """Set sleep mode to on."""
         return self.mode_toggle('sleep')
 
     def change_fan_speed(self, speed: int = None) -> bool:
-        """Adjust Fan Speed by Specifying 1,2,3 as argument or cycle
-            through speeds increasing by one"""
+        """Adjust Fan Speed for air purifier.
+
+        Specifying 1,2,3 as argument or call without argument to cycle
+        through speeds increasing by one.
+        """
         if self.mode != 'manual':
             logger.debug(
                 '{} not in manual mode, cannot change speed'.format(
@@ -187,7 +195,7 @@ class VeSyncAir131(VeSyncBaseDevice):
             return False
 
     def mode_toggle(self, mode: str) -> bool:
-        """Set mode to manual, auto or sleep"""
+        """Set mode to manual, auto or sleep."""
         head = helpers.req_headers(self.manager)
         body = helpers.req_body(self.manager, 'devicestatus')
         body['uuid'] = self.uuid
@@ -210,10 +218,11 @@ class VeSyncAir131(VeSyncBaseDevice):
         return False
 
     def update(self):
-        """Run function to get device details"""
+        """Run function to get device details."""
         self.get_details()
 
     def display(self):
+        """Return formatted device info to stdout."""
         super(VeSyncAir131, self).display()
         disp1 = [("Active Time : ", self.active_time, ' minutes'),
                  ("Fan Level: ", self.fan_level, ""),
@@ -225,6 +234,7 @@ class VeSyncAir131(VeSyncBaseDevice):
             print("{:.<15} {} {}".format(line[0], line[1], line[2]))
 
     def displayJSON(self):
+        """Return air purifier status and properties in JSON output."""
         sup = super().displayJSON()
         supVal = json.loads(sup)
         supVal.append({

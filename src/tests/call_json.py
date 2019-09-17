@@ -1,5 +1,5 @@
 import time
-import pyvesync.helpers as helpers
+import pyvesync_v2.helpers as helpers
 
 API_BASE_URL = helpers.API_BASE_URL
 API_RATE_LIMIT = helpers.API_RATE_LIMIT
