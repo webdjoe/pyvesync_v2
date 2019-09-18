@@ -77,16 +77,6 @@ class TestVesync10ASwitch(object):
         assert len(caplog.records) == 1
         assert 'details' in caplog.text
 
-    @pytest.mark.parametrize('details, id', ((DEV_LIST_DETAIL_EU, 'EU'),
-                             (DEV_LIST_DETAIL_US, 'US')))
-    def test_10a_no_details(self, details, id, caplog, api_mock):
-        """Test 10A details return with no details and code=0."""
-        bad_10a_details = {"code": 0, "deviceStatus": "on"}
-        self.mock_api.return_value = (bad_10a_details, 200)
-        out = VeSyncOutlet10A(details, self.vesync_obj)
-        out.get_details()
-        assert len(caplog.records) == 2
-
     def test_10a_onoff(self, caplog, api_mock):
         """Test 10A Device On/Off Methods."""
         self.mock_api.return_value = ({"code": 0}, 200)
@@ -183,13 +173,13 @@ class TestVesync10ASwitch(object):
         self.mock_api.return_value = (bad_history, 200)
         out = VeSyncOutlet10A(DEV_LIST_DETAIL_US, self.vesync_obj)
         out.update_energy()
-        assert len(caplog.records) == 2
+        assert len(caplog.records) == 1
         assert 'weekly' in caplog.text
         caplog.clear()
         out.get_monthly_energy()
-        assert len(caplog.records) == 2
+        assert len(caplog.records) == 1
         assert 'monthly' in caplog.text
         caplog.clear()
         out.get_yearly_energy()
-        assert len(caplog.records) == 2
+        assert len(caplog.records) == 1
         assert 'yearly' in caplog.text

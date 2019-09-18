@@ -30,7 +30,7 @@ class VeSyncAir131(VeSyncBaseDevice):
             json=body
         )
 
-        if r is not None and helpers.check_response(r, 'airpur_detail'):
+        if r is not None and helpers.code_check(r):
             self.device_status = r.get('deviceStatus', 'unknown')
             self.connection_status = r.get('connectionStatus', 'unknown')
             self.details['active_time'] = r.get('activeTime', 0)
@@ -40,7 +40,7 @@ class VeSyncAir131(VeSyncBaseDevice):
             self.details['level'] = r.get('level', 0)
             self.details['air_quality'] = r.get('airQuality', 'unknown')
         else:
-            logger.debug('Error getting {} details'.format(self.device_name))
+            logger.debug('Error getting %s details', self.device_name)
 
     def get_config(self):
         """Get configuration info for air purifier."""
@@ -54,8 +54,11 @@ class VeSyncAir131(VeSyncBaseDevice):
             headers=helpers.req_headers(self.manager),
             json=body)
 
-        if helpers.check_response(r, 'config'):
+        if helpers.code_check(r):
             self.config = helpers.build_config_dict(r)
+        else:
+            logger.warning("Unable to get config info for %s",
+                           self.device_name)
 
     @property
     def active_time(self):
@@ -100,11 +103,11 @@ class VeSyncAir131(VeSyncBaseDevice):
                 headers=head
             )
 
-            if r is not None and helpers.check_response(r, 'airpur_status'):
+            if r is not None and helpers.code_check(r):
                 self.device_status = 'on'
                 return True
             else:
-                logger.warning('Error turning {} on'.format(self.device_name))
+                logger.warning('Error turning %s on', self.device_name)
                 return False
 
     def turn_off(self):
@@ -122,11 +125,11 @@ class VeSyncAir131(VeSyncBaseDevice):
                 headers=head
             )
 
-            if r is not None and helpers.check_response(r, 'airpur_status'):
+            if r is not None and helpers.code_check(r):
                 self.device_status = 'off'
                 return True
             else:
-                logger.warning('Error turning {} off'.format(self.device_name))
+                logger.warning('Error turning %s off', self.device_name)
                 return False
 
     def auto_mode(self):
@@ -186,13 +189,11 @@ class VeSyncAir131(VeSyncBaseDevice):
             headers=head
         )
 
-        if r is not None and helpers.check_response(r, 'airpur_status'):
+        if r is not None and helpers.code_check(r):
             self.details['level'] = body['level']
             return True
-        else:
-            logger.warning(
-                'Error changing {} speed'.format(self.device_name))
-            return False
+        logger.warning('Error changing %s speed', self.device_name)
+        return False
 
     def mode_toggle(self, mode: str) -> bool:
         """Set mode to manual, auto or sleep."""
@@ -211,10 +212,11 @@ class VeSyncAir131(VeSyncBaseDevice):
                 headers=head
             )
 
-            if r is not None and helpers.check_response(r, 'airpur_status'):
+            if r is not None and helpers.code_check(r):
                 self.mode = mode
                 return True
 
+        logger.warning("Error setting %s mode - %s", self.device_name, mode)
         return False
 
     def update(self):

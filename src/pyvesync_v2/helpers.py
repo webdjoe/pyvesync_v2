@@ -161,7 +161,7 @@ class Helpers:
         status_code = None
 
         try:
-            logger.debug("[%s] calling '%s' api" % (method, api))
+            logger.debug("[%s] calling '%s' api", method, api)
             if method == 'get':
                 r = requests.get(
                     API_BASE_URL + api, json=json,
@@ -186,72 +186,16 @@ class Helpers:
                 status_code = 200
                 response = r.json()
             else:
-                logger.debug('Unable to fetch %s%s' % (API_BASE_URL, api))
+                logger.debug('Unable to fetch %s%s', API_BASE_URL, api)
         finally:
             return (response, status_code)
 
     @staticmethod
-    def check_response(resp: dict, call: str) -> bool:
-        """Check API responses."""
-        common_resp = [
-            'get_devices', '15a_toggle',
-            '15a_energy', 'walls_detail', 'walls_toggle',
-            '10a_toggle', '10a_energy', '15a_ntlight',
-            'airpur_detail', 'airpur_status', 'outdoor_toggle',
-            'outdoor_energy', 'bulb_detail', 'bulb_toggle', 'config'
-        ]
-
-        det_resp = ['15a_detail', '10a_detail', 'outdoor_detail']
-
-        if isinstance(resp, dict):
-            if call in det_resp:
-                if 'code' in resp and resp['code'] == 0:
-                    keys = ['deviceStatus', 'power', 'voltage', 'activeTime']
-                    if all(x in resp for x in keys):
-                        return True
-                    else:
-                        logger.warning(
-                            'Keys missing from getting device details')
-                        return False
-                else:
-                    return False
-            elif call in common_resp:
-                if 'code' in resp and resp['code'] == 0:
-                    return True
-                else:
-                    logger.warning('Error getting details')
-                    return False
-            elif call == 'bypass':
-                if 'code' in resp and 'result' in resp:
-                    return True
-                else:
-                    return False
-            elif call == 'login' and 'code' in resp:
-                if resp['code'] == 0 and 'result' in resp:
-                    return True
-                else:
-                    logger.error('Error in %s response')
-                    return False
-            elif call == '7a_detail':
-                keys = ['deviceStatus', 'activeTime',
-                        'energy', 'power', 'voltage']
-                if all(x in resp for x in keys):
-                    return True
-                else:
-                    logger.warning('Keys missing from get_details for 7A')
-                    return False
-            elif call == '7a_energy':
-                keys = ['energyConsumptionOfToday', 'maxEnergy', 'totalEnergy']
-                if all(x in resp for x in keys):
-                    return True
-                else:
-                    logger.warning('Keys missing from getting energy in 7A')
-                    return False
-            else:
-                logger.error('Unkown call')
-                return False
-        else:
-            return False
+    def code_check(r: dict) -> bool:
+        """Test if code == 0 for successful API call."""
+        if isinstance(r, dict) and r.get("code") == 0:
+            return True
+        return False
 
     @staticmethod
     def build_details_dict(r: dict) -> dict:

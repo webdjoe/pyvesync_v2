@@ -25,7 +25,8 @@ class TestVesync7ASwitch(object):
     @pytest.fixture()
     def api_mock(self, caplog):
         """Mock call_api() and initialize VeSync object."""
-        self.mock_api_call = patch.object(pyvesync_v2.helpers.Helpers, 'call_api')
+        self.mock_api_call = patch.object(pyvesync_v2.helpers.Helpers,
+                                          'call_api')
         self.mock_api = self.mock_api_call.start()
         self.mock_api.create_autospect()
         self.mock_api.return_value.ok = True
@@ -75,7 +76,7 @@ class TestVesync7ASwitch(object):
         self.mock_api.return_value = (bad_7a_details, 200)
         vswitch7a = VeSyncOutlet7A(DEV_LIST_DETAIL, self.vesync_obj)
         vswitch7a.get_details()
-        assert len(caplog.records) == 2
+        assert len(caplog.records) == 1
         assert 'details' in caplog.text
 
     def test_7a_no_details(self, caplog, api_mock):
@@ -86,7 +87,7 @@ class TestVesync7ASwitch(object):
         self.mock_api.return_value = (bad_7a_details, 200)
         vswitch7a = VeSyncOutlet7A(DEV_LIST_DETAIL, self.vesync_obj)
         vswitch7a.get_details()
-        assert len(caplog.records) == 2
+        assert len(caplog.records) == 1
 
     def test_7a_onoff(self, caplog, api_mock):
         """Test 7A outlet on/off methods."""
@@ -165,13 +166,13 @@ class TestVesync7ASwitch(object):
         self.mock_api.return_value = (bad_history, 200)
         vswitch7a = VeSyncOutlet7A(DEV_LIST_DETAIL, self.vesync_obj)
         vswitch7a.update_energy()
-        assert len(caplog.records) == 2
+        assert len(caplog.records) == 1
         assert 'weekly' in caplog.text
         caplog.clear()
         vswitch7a.get_monthly_energy()
-        assert len(caplog.records) == 2
+        assert len(caplog.records) == 1
         assert 'monthly' in caplog.text
         caplog.clear()
         vswitch7a.get_yearly_energy()
-        assert len(caplog.records) == 2
+        assert len(caplog.records) == 1
         assert 'yearly' in caplog.text

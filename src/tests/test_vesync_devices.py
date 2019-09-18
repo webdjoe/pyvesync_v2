@@ -8,8 +8,8 @@ import time
 import copy
 from itertools import chain
 from pyvesync_v2 import (VeSyncAir131, VeSyncBulbESL100, VeSyncOutdoorPlug,
-                      VeSyncOutlet10A, VeSyncOutlet15A, VeSyncOutlet7A,
-                      VeSyncWallSwitch)
+                         VeSyncOutlet10A, VeSyncOutlet15A, VeSyncOutlet7A,
+                         VeSyncWallSwitch)
 from . import call_json as json_vals
 
 BAD_DEV_LIST = {
@@ -155,7 +155,7 @@ class TestDeviceList(object):
 
         unknown_dev['devType'] = "UNKNOWN-DEVTYPE"
 
-        pyvesync_v2.vesync.VSFactory.getDevice(
+        pyvesync_v2.vesync.get_device(
             'unkown_device', unknown_dev, self.vesync_obj)
 
         assert len(caplog.records) == 1
