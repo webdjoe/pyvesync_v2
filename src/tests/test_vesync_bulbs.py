@@ -60,7 +60,7 @@ class TestVeSyncBulbESL100:
         self.mock_api.return_value = ({'code': 5}, 200)
         bulb = VeSyncBulbESL100(DEV_LIST_DETAIL, self.vesync_obj)
         bulb.update()
-        assert len(caplog.records) == 2
+        assert len(caplog.records) == 1
 
     def test_esl100_onoff(self, caplog, api_mock):
         """Test power toggle for ESL100 bulb."""

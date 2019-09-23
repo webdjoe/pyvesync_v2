@@ -89,16 +89,16 @@ class VeSyncBulb(VeSyncBaseDevice):
         if self.toggle('on'):
             self.device_status = 'on'
             return True
-        else:
-            return False
+        logger.warning("Error turning %s on", self.device_name)
+        return False
 
     def turn_off(self):
         """Turn off vesync bulbs."""
         if self.toggle('off'):
             self.device_status = 'off'
             return True
-        else:
-            return False
+        logger.warning("Error turning %s off", self.device_name)
+        return False
 
     def update(self):
         """Update bulb details."""
@@ -143,13 +143,13 @@ class VeSyncBulbESL100(VeSyncBulb):
             headers=helpers.req_headers(self.manager),
             json=body
             )
-        if helpers.check_response(r, 'bulb_detail'):
+        if helpers.code_check(r):
             self.connection_status = r.get('connectionStatus')
             self.device_status = r.get('deviceStatus')
             if self.dimmable_feature:
                 self._brightness = int(r.get('brightNess'))
         else:
-            logger.debug('Error getting {} details'.format(self.device_name))
+            logger.debug('Error getting %s details', self.device_name)
 
     def get_config(self):
         """Get configuration of dimmable bulb."""
@@ -163,8 +163,10 @@ class VeSyncBulbESL100(VeSyncBulb):
             headers=helpers.req_headers(self.manager),
             json=body)
 
-        if helpers.check_response(r, 'config'):
+        if helpers.code_check(r):
             self.config = helpers.build_config_dict(r)
+        else:
+            logger.warning("Error getting %s config info", self.device_name)
 
     def toggle(self, status):
         """Toggle dimmable bulb."""
@@ -177,39 +179,37 @@ class VeSyncBulbESL100(VeSyncBulb):
             headers=helpers.req_headers(self.manager),
             json=body
             )
-        if helpers.check_response(r, 'bulb_toggle'):
+        if helpers.code_check(r):
             self.device_status = status
             return True
-        else:
-            return False
+        return False
 
     def set_brightness(self, brightness: int):
         """Set brightness of dimmable bulb."""
-        if self.dimmable_feature:
-            if brightness > 0 and brightness <= 100:
-                body = helpers.req_body(self.manager, 'devicestatus')
-                body['uuid'] = self.uuid
-                body['status'] = 'on'
-                body['brightNess'] = str(brightness)
-                r, _ = helpers.call_api(
-                    '/SmartBulb/v1/device/updateBrightness',
-                    'put',
-                    headers=helpers.req_headers(self.manager),
-                    json=body)
-
-                if helpers.check_response(r, 'bulb_toggle'):
-                    self._brightness = brightness
-                    return True
-                else:
-                    logger.debug(
-                        'Error setting brightness for {}'.format(
-                            self.device_name))
-                    return False
-            else:
-                logger.warning('Invalid brightness')
-                return False
-        else:
+        if not self.dimmable_feature:
             logger.debug('%s is not dimmable', self.device_name)
+            return False
+        if isinstance(brightness, int) and (brightness <= 0 or
+                                            brightness > 100):
+            logger.warning('Invalid brightness')
+            return False
+
+        body = helpers.req_body(self.manager, 'devicestatus')
+        body['uuid'] = self.uuid
+        body['status'] = 'on'
+        body['brightNess'] = str(brightness)
+        r, _ = helpers.call_api(
+            '/SmartBulb/v1/device/updateBrightness',
+            'put',
+            headers=helpers.req_headers(self.manager),
+            json=body)
+
+        if helpers.code_check(r):
+            self._brightness = brightness
+            return True
+
+        logger.debug('Error setting brightness for %s', self.device_name)
+        return False
 
 
 class VeSyncBulbESL100CW(VeSyncBulb):
@@ -230,24 +230,21 @@ class VeSyncBulbESL100CW(VeSyncBulb):
             'post',
             headers=helpers.req_headers(self.manager),
             json=body)
-        if helpers.check_response(r, 'bypass'):
-            if r.get('code') == 0 and r.get('result').get('light') is not None:
-                light = r.get('result').get('light')
-                self.connection_status = 'online'
-                self.device_status = light.get('action', 'off')
-                if self.dimmable_feature:
-                    self._brightness = light.get('brightness')
-                if self.color_temp_feature:
-                    self._color_temp = light.get('colorTempe')
-            elif r.get('code') == -11300027:
-                logger.debug('%s device offline', self.device_name)
-                self.connection_status = 'offline'
-                self.device_status = 'off'
-            else:
-                logger.warning('%s - Unknown return code - %d with message %s',
-                               self.device_name, r.get('code'), r.get('msg'))
+        if r.get('code') == 0 and r.get('result').get('light') is not None:
+            light = r.get('result').get('light')
+            self.connection_status = 'online'
+            self.device_status = light.get('action', 'off')
+            if self.dimmable_feature:
+                self._brightness = light.get('brightness')
+            if self.color_temp_feature:
+                self._color_temp = light.get('colorTempe')
+        elif r.get('code') == -11300027:
+            logger.debug('%s device offline', self.device_name)
+            self.connection_status = 'offline'
+            self.device_status = 'off'
         else:
-            logger.debug('Error getting {} details'.format(self.device_name))
+            logger.warning('%s - Unknown return code - %d with message %s',
+                           self.device_name, r.get('code'), r.get('msg'))
 
     def get_config(self):
         """Get configuration and firmware info of tunable bulb."""
@@ -260,8 +257,10 @@ class VeSyncBulbESL100CW(VeSyncBulb):
             headers=helpers.req_headers(self.manager),
             json=body)
 
-        if helpers.check_response(r, 'config'):
+        if helpers.code_check(r):
             self.config = helpers.build_config_dict(r)
+        else:
+            logger.debug("Error getting %s config info", self.device_name)
 
     def toggle(self, status):
         """Toggle tunable bulb."""
@@ -274,50 +273,46 @@ class VeSyncBulbESL100CW(VeSyncBulb):
             'post',
             headers=helpers.req_headers(self.manager),
             json=body)
-        if helpers.check_response(r, 'bypass'):
-            if r.get('code') == 0:
-                self.device_status = status
-                return True
-            else:
-                logger.debug('%s offline', self.device_name)
-                self.device_status = 'off'
-                self.connection_status = 'offline'
-
+        if r.get('code') == 0:
+            self.device_status = status
+            return True
+        logger.debug('%s offline', self.device_name)
+        self.device_status = 'off'
+        self.connection_status = 'offline'
         return False
 
     def set_brightness(self, brightness: int) -> bool:
         """Set brightness of tunable bulb."""
-        if self.dimmable_feature:
-            if brightness > 0 and brightness <= 100:
-                body = helpers.req_body(self.manager, 'bypass')
-                body['cid'] = self.cid
-                body['configModule'] = self.config_module
-                if self.device_status == 'off':
-                    light_dict = {'action': 'on', 'brightness': brightness}
-                else:
-                    light_dict = {'brightness': brightness}
-                body['jsonCmd'] = {'light': light_dict}
-                r, _ = helpers.call_api(
-                    '/cloud/v1/deviceManaged/bypass',
-                    'post',
-                    headers=helpers.req_headers(self.manager),
-                    json=body)
-
-                if helpers.check_response(r, 'bypass'):
-                    if r.get('code') == 0:
-                        self._brightness = brightness
-                        return True
-                    else:
-                        self.device_status = 'off'
-                        self.connection_status = 'offline'
-                        logger.debug('%s offline', self.device_name)
-                else:
-                    logger.debug('Error setting brightness for {}'.format(
-                        self.device_name))
-            else:
-                logger.warning('Invalid brightness')
-        else:
+        if not self.dimmable_feature:
             logger.debug('%s is not dimmable', self.device_name)
+            return False
+        if brightness <= 0 or brightness > 100:
+            logger.debug('Invalid brightness')
+            return False
+
+        body = helpers.req_body(self.manager, 'bypass')
+        body['cid'] = self.cid
+        body['configModule'] = self.config_module
+        if self.device_status == 'off':
+            light_dict = {'action': 'on', 'brightness': brightness}
+        else:
+            light_dict = {'brightness': brightness}
+        body['jsonCmd'] = {'light': light_dict}
+        r, _ = helpers.call_api(
+            '/cloud/v1/deviceManaged/bypass',
+            'post',
+            headers=helpers.req_headers(self.manager),
+            json=body)
+
+        if helpers.code_check(r):
+            self._brightness = brightness
+            return True
+        else:
+            self.device_status = 'off'
+            self.connection_status = 'offline'
+            logger.debug('%s offline', self.device_name)
+
+        logger.debug('Error setting brightness for %s', self.device_name)
         return False
 
     def set_color_temp(self, color_temp: int) -> bool:
@@ -338,17 +333,17 @@ class VeSyncBulbESL100CW(VeSyncBulb):
             'post',
             headers=helpers.req_headers(self.manager),
             json=body)
-        if helpers.check_response(r, 'bypass'):
-            if r.get('code') == -11300027:
-                logger.debug('%s device offline', self.device_name)
-                self.connection_status = 'offline'
-                self.device_status = 'off'
-                return False
-            elif r.get('code') == 0:
-                self.device_status = 'on'
-                self._color_temp = color_temp
-                return True
-            else:
-                logger.warning('%s - Unknown return code - %d with message %s',
-                               self.device_name, r.get('code'), r.get('msg'))
+
+        if r.get('code') == -11300027:
+            logger.debug('%s device offline', self.device_name)
+            self.connection_status = 'offline'
+            self.device_status = 'off'
+            return False
+        elif r.get('code') == 0:
+            self.device_status = 'on'
+            self._color_temp = color_temp
+            return True
+        else:
+            logger.warning('%s - Unknown return code - %d with message %s',
+                           self.device_name, r.get('code'), r.get('msg'))
         return False

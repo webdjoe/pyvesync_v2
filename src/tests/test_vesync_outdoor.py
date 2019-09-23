@@ -68,14 +68,6 @@ class TestVesyncOutdoorPlug:
         assert len(caplog.records) == 1
         assert 'details' in caplog.text
 
-    def test_outdoor_outlet_no_details(self, caplog, api_mock):
-        """Test outdoor outlet details return with no details and code=0."""
-        bad_outdoor_details = {"code": 0, "deviceStatus": "on"}
-        self.mock_api.return_value = (bad_outdoor_details, 200)
-        outdoor_outlet = VeSyncOutdoorPlug(DEV_LIST_DETAIL, self.vesync_obj)
-        outdoor_outlet.get_details()
-        assert len(caplog.records) == 2
-
     def test_outdoor_outlet_onoff(self, caplog, api_mock):
         """Test Outdoor Outlet Device On/Off Methods."""
         self.mock_api.return_value = ({"code": 0}, 200)
@@ -175,13 +167,13 @@ class TestVesyncOutdoorPlug:
         self.mock_api.return_value = (bad_history, 200)
         outdoor_outlet = VeSyncOutdoorPlug(DEV_LIST_DETAIL, self.vesync_obj)
         outdoor_outlet.update_energy()
-        assert len(caplog.records) == 2
+        assert len(caplog.records) == 1
         assert 'weekly' in caplog.text
         caplog.clear()
         outdoor_outlet.get_monthly_energy()
-        assert len(caplog.records) == 2
+        assert len(caplog.records) == 1
         assert 'monthly' in caplog.text
         caplog.clear()
         outdoor_outlet.get_yearly_energy()
-        assert len(caplog.records) == 2
+        assert len(caplog.records) == 1
         assert 'yearly' in caplog.text

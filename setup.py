@@ -23,11 +23,12 @@ setup(
         'Intended Audience :: Developers',
         'Intended Audience :: End Users/Desktop',
         'Natural Language :: English',
-        'Programming Language :: Python :: 3.0',
+        'Programming Language :: Python :: 3.5',
     ],
     keywords=['iot', 'vesync', 'etekcity', 'levoit'],
     packages=find_packages('src'),
     package_dir={'': "src"},
     zip_safe=False,
     install_requires=['requests>=2.20.0'],
+    python_requires='>=3.5'
 )

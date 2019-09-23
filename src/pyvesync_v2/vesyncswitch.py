@@ -77,13 +77,13 @@ class VeSyncWallSwitch(VeSyncSwitch):
             json=body
         )
 
-        if r is not None and helpers.check_response(r, 'walls_detail'):
+        if r is not None and helpers.code_check(r):
             self.device_status = r.get('deviceStatus', self.device_status)
             self.details['active_time'] = r.get('activeTime', 0)
             self.connection_status = r.get('connectionStatus',
                                            self.connection_status)
         else:
-            logger.debug('Error getting {} details'.format(self.device_name))
+            logger.debug('Error getting %s details', self.device_name)
 
     def get_config(self):
         """Get switch device configuration info."""
@@ -97,8 +97,10 @@ class VeSyncWallSwitch(VeSyncSwitch):
             headers=helpers.req_headers(self.manager),
             json=body)
 
-        if helpers.check_response(r, 'config'):
+        if helpers.code_check(r):
             self.config = helpers.build_config_dict(r)
+        else:
+            logger.warning("Unable to get %s config info", self.device_name)
 
     def turn_off(self):
         """Turn off switch device."""
@@ -114,12 +116,11 @@ class VeSyncWallSwitch(VeSyncSwitch):
             json=body
         )
 
-        if r is not None and helpers.check_response(r, 'walls_toggle'):
+        if r is not None and helpers.code_check(r):
             self.device_status = 'off'
             return True
-        else:
-            logger.warning('Error turning {} off'.format(self.device_name))
-            return False
+        logger.warning('Error turning %s off', self.device_name)
+        return False
 
     def turn_on(self):
         """Turn on switch device."""
@@ -135,12 +136,11 @@ class VeSyncWallSwitch(VeSyncSwitch):
             json=body
         )
 
-        if r is not None and helpers.check_response(r, 'walls_toggle'):
+        if r is not None and helpers.code_check(r):
             self.device_status = 'on'
             return True
-        else:
-            logger.warning('Error turning {} on'.format(self.device_name))
-            return False
+        logger.warning('Error turning %s on', self.device_name)
+        return False
 
 
 class VeSyncDimmerSwitch(VeSyncSwitch):
@@ -166,7 +166,7 @@ class VeSyncDimmerSwitch(VeSyncSwitch):
             headers=head,
             json=body)
 
-        if r is not None and helpers.check_response(r, 'walls_detail'):
+        if r is not None and helpers.code_check(r):
             self.device_status = r.get('deviceStatus', self.device_status)
             self.details['active_time'] = r.get('activeTime', 0)
             self.connection_status = r.get('connectionStatus',
@@ -176,7 +176,7 @@ class VeSyncDimmerSwitch(VeSyncSwitch):
             self._rgb_value = r.get('rgbValue')
             self._indicator_light = r.get('indicatorlightStatus')
         else:
-            logger.debug('Error getting {} details'.format(self.device_name))
+            logger.debug('Error getting %s details', self.device_name)
 
     @property
     def brightness(self):
@@ -215,12 +215,12 @@ class VeSyncDimmerSwitch(VeSyncSwitch):
             json=body
         )
 
-        if r is not None and helpers.check_response(r, 'walls_toggle'):
+        if r is not None and helpers.code_check(r):
             self.device_status = status
             return True
-        else:
-            logger.warning('Error turning %s %s', self.device_name, status)
-            return False
+
+        logger.warning('Error turning %s %s', self.device_name, status)
+        return False
 
     def turn_on(self) -> bool:
         """Turn switch on."""
@@ -247,13 +247,13 @@ class VeSyncDimmerSwitch(VeSyncSwitch):
             json=body
         )
 
-        if r is not None and helpers.check_response(r, 'walls_toggle'):
+        if r is not None and helpers.code_check(r):
             self.device_status = status
             return True
-        else:
-            logger.warning('Error turning %s indicator light %s',
-                           self.device_name, status)
-            return False
+
+        logger.warning('Error turning %s indicator light %s',
+                       self.device_name, status)
+        return False
 
     def indicator_light_on(self) -> bool:
         """Turn Indicator light on."""
@@ -280,14 +280,13 @@ class VeSyncDimmerSwitch(VeSyncSwitch):
             json=body
         )
 
-        if r is not None and helpers.check_response(r, 'walls_toggle'):
+        if r is not None and helpers.code_check(r):
             self._rgb_status = status
             if body.get('rgbValue') is not None:
                 self._rgb_value = {'red': red, 'blue': blue, 'green': green}
             return True
-        else:
-            logger.warning('Error turning {} off'.format(self.device_name))
-            return False
+        logger.warning('Error turning %s off', self.device_name)
+        return False
 
     def rgb_color_off(self) -> bool:
         """Turn RGB Color Off."""
@@ -325,7 +324,7 @@ class VeSyncDimmerSwitch(VeSyncSwitch):
                 headers=head,
                 json=body)
 
-            if r is not None and helpers.check_response(r, 'walls_toggle'):
+            if r is not None and helpers.code_check(r):
                 self._brightness = brightness
                 return True
             else:

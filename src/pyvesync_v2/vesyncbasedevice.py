@@ -79,12 +79,10 @@ class VeSyncBaseDevice(object):
         if cfv is not None and lfv is not None:
             if cfv != lfv:
                 return True
-            else:
-                return False
         else:
             logger.warning(
                 'Call device.get_config() to get firmware versions')
-            return False
+        return False
 
     def display(self):
         """Print formatted device info to stdout."""
