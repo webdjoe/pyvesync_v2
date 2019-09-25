@@ -1,10 +1,12 @@
 # pyvesync_v2
 
-pyvesync_v2 is a library to manage VeSync compatible smart home devices based off the [pyvesync](https://github.com/markperdue/pyvesync) library by @markperdue
+pyvesync_v2 is a library to manage VeSync compatible [smart home devices](#supported-devices)
+
+***Only compatible with python 3.5+***
 
 ## Table of Contents
 
-- [pyvesync_v2](#pyvesyncv2)
+- [pyvesync_v2](#pyvesync_v2)
   - [Table of Contents](#table-of-contents)
   - [Installation](#installation)
   - [Supported Devices](#supported-devices)
@@ -246,6 +248,9 @@ device.displayJSON()
   'Energy Week': '12', # totaly energy of week in kWh
   'Energy Month': '50', # total energy of month in kWh
   'Energy Year': '89', # total energy of year in kWh
+  'Nightlight Status': 'on', #status of nightlight for 15A outlets
+  'Nightlight Automode': 'manual', #auto/manual for 15A outlets
+  'Nightlight Brightness': '50' #brightness of nightlight
 }
 ```
 
