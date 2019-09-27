@@ -11,7 +11,7 @@ pr:
   - '*'
 
 jobs:
-- job: 'Validate'
+- job: 'Validation'
   steps:
   - task: UsePythonVersion@0
     inputs:
