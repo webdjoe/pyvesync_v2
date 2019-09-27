@@ -65,10 +65,10 @@ class TestDeviceList(object):
     def test_getdevs_vsfact(self, air_patch, ws_patch, out10a_patch,
                             out15a_patch, out7a_patch, api_mock):
         """Test the get_devices, process_devices and VSFactory methods.
+
         Build list with device objects from details
         Test for all 6 known devices - 4 outlets, 2 switches, 1 fan.
         """
-
         device_list = json_vals.DEVLIST_ALL
 
         self.mock_api.return_value = device_list
@@ -184,6 +184,7 @@ class TestDeviceList(object):
                              outdoor_patch, out10a_patch, out15a_patch,
                              out7a_patch, caplog, api_mock):
         """Test process_devices() with all devices.
+
         Creates vesync object with all devices and returns
         device list with new set of all devices.
         """

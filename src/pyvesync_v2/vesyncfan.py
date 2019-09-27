@@ -1,11 +1,11 @@
 """VeSync API for controling fans and purifiers."""
 
 import json
+import logging
 from pyvesync_v2.vesyncbasedevice import VeSyncBaseDevice
 from pyvesync_v2.helpers import Helpers as helpers
-import logging
 
-logger = logging.getLogger(__name__)
+_LOGGER = logging.getLogger(__name__)
 
 
 class VeSyncAir131(VeSyncBaseDevice):
@@ -13,7 +13,7 @@ class VeSyncAir131(VeSyncBaseDevice):
 
     def __init__(self, details, manager):
         """Initilize air purifier class."""
-        super(VeSyncAir131, self).__init__(details, manager)
+        super().__init__(details, manager)
 
         self.details = {}
 
@@ -23,12 +23,10 @@ class VeSyncAir131(VeSyncBaseDevice):
         body['uuid'] = self.uuid
         head = helpers.req_headers(self.manager)
 
-        r, _ = helpers.call_api(
-            '/131airPurifier/v1/device/deviceDetail',
-            method='post',
-            headers=head,
-            json=body
-        )
+        r, _ = helpers.call_api('/131airPurifier/v1/device/deviceDetail',
+                                method='post',
+                                headers=head,
+                                json=body)
 
         if r is not None and helpers.code_check(r):
             self.device_status = r.get('deviceStatus', 'unknown')
@@ -40,7 +38,7 @@ class VeSyncAir131(VeSyncBaseDevice):
             self.details['level'] = r.get('level', 0)
             self.details['air_quality'] = r.get('airQuality', 'unknown')
         else:
-            logger.debug('Error getting %s details', self.device_name)
+            _LOGGER.debug('Error getting %s details', self.device_name)
 
     def get_config(self):
         """Get configuration info for air purifier."""
@@ -48,17 +46,16 @@ class VeSyncAir131(VeSyncBaseDevice):
         body['method'] = 'configurations'
         body['uuid'] = self.uuid
 
-        r, _ = helpers.call_api(
-            '/131airpurifier/v1/device/configurations',
-            'post',
-            headers=helpers.req_headers(self.manager),
-            json=body)
+        r, _ = helpers.call_api('/131airpurifier/v1/device/configurations',
+                                'post',
+                                headers=helpers.req_headers(self.manager),
+                                json=body)
 
         if helpers.code_check(r):
             self.config = helpers.build_config_dict(r)
         else:
-            logger.warning("Unable to get config info for %s",
-                           self.device_name)
+            _LOGGER.warning("Unable to get config info for %s",
+                            self.device_name)
 
     @property
     def active_time(self):
@@ -96,19 +93,16 @@ class VeSyncAir131(VeSyncBaseDevice):
             body['status'] = 'on'
             head = helpers.req_headers(self.manager)
 
-            r, _ = helpers.call_api(
-                '/131airPurifier/v1/device/deviceStatus',
-                'put',
-                json=body,
-                headers=head
-            )
+            r, _ = helpers.call_api('/131airPurifier/v1/device/deviceStatus',
+                                    'put',
+                                    json=body,
+                                    headers=head)
 
             if r is not None and helpers.code_check(r):
                 self.device_status = 'on'
                 return True
-            else:
-                logger.warning('Error turning %s on', self.device_name)
-                return False
+            _LOGGER.warning('Error turning %s on', self.device_name)
+            return False
 
     def turn_off(self):
         """Turn Air Purifier Off."""
@@ -118,19 +112,16 @@ class VeSyncAir131(VeSyncBaseDevice):
             body['status'] = 'off'
             head = helpers.req_headers(self.manager)
 
-            r, _ = helpers.call_api(
-                '/131airPurifier/v1/device/deviceStatus',
-                'put',
-                json=body,
-                headers=head
-            )
+            r, _ = helpers.call_api('/131airPurifier/v1/device/deviceStatus',
+                                    'put',
+                                    json=body,
+                                    headers=head)
 
             if r is not None and helpers.code_check(r):
                 self.device_status = 'off'
                 return True
-            else:
-                logger.warning('Error turning %s off', self.device_name)
-                return False
+            _LOGGER.warning('Error turning %s off', self.device_name)
+            return False
 
     def auto_mode(self):
         """Set mode to auto."""
@@ -151,17 +142,15 @@ class VeSyncAir131(VeSyncBaseDevice):
         through speeds increasing by one.
         """
         if self.mode != 'manual':
-            logger.debug(
-                '{} not in manual mode, cannot change speed'.format(
-                    self.device_name))
+            _LOGGER.debug('%s not in manual mode, cannot change speed',
+                          self.device_name)
             return False
 
         try:
             level = self.details['level']
         except KeyError:
-            logger.debug(
-                'Cannot change fan speed, no level set for {}'.format(
-                    self.device_name))
+            _LOGGER.debug('Cannot change fan speed, no level set for %s',
+                          self.device_name)
             return False
 
         body = helpers.req_body(self.manager, 'devicestatus')
@@ -170,11 +159,10 @@ class VeSyncAir131(VeSyncBaseDevice):
         if speed is not None:
             if speed == level:
                 return True
-            elif speed in [1, 2, 3]:
+            if speed in [1, 2, 3]:
                 body['level'] = speed
             else:
-                logger.debug(
-                    'Invalid fan speed for {}'.format(self.device_name))
+                _LOGGER.debug('Invalid fan speed for %s', self.device_name)
                 return False
         else:
             if (level + 1) > 3:
@@ -182,17 +170,15 @@ class VeSyncAir131(VeSyncBaseDevice):
             else:
                 body['level'] = int(level + 1)
 
-        r, _ = helpers.call_api(
-            '/131airPurifier/v1/device/updateSpeed',
-            'put',
-            json=body,
-            headers=head
-        )
+        r, _ = helpers.call_api('/131airPurifier/v1/device/updateSpeed',
+                                'put',
+                                json=body,
+                                headers=head)
 
         if r is not None and helpers.code_check(r):
             self.details['level'] = body['level']
             return True
-        logger.warning('Error changing %s speed', self.device_name)
+        _LOGGER.warning('Error changing %s speed', self.device_name)
         return False
 
     def mode_toggle(self, mode: str) -> bool:
@@ -205,18 +191,16 @@ class VeSyncAir131(VeSyncBaseDevice):
             if mode == 'manual':
                 body['level'] = 1
 
-            r, _ = helpers.call_api(
-                '/131airPurifier/v1/device/updateMode',
-                'put',
-                json=body,
-                headers=head
-            )
+            r, _ = helpers.call_api('/131airPurifier/v1/device/updateMode',
+                                    'put',
+                                    json=body,
+                                    headers=head)
 
             if r is not None and helpers.code_check(r):
                 self.mode = mode
                 return True
 
-        logger.warning("Error setting %s mode - %s", self.device_name, mode)
+        _LOGGER.warning("Error setting %s mode - %s", self.device_name, mode)
         return False
 
     def update(self):
@@ -235,16 +219,16 @@ class VeSyncAir131(VeSyncBaseDevice):
         for line in disp1:
             print("{:.<15} {} {}".format(line[0], line[1], line[2]))
 
-    def displayJSON(self):
+    def display_json(self):
         """Return air purifier status and properties in JSON output."""
-        sup = super().displayJSON()
-        supVal = json.loads(sup)
-        supVal.append({
+        sup = super().display_json()
+        sup_val = json.loads(sup)
+        sup_val.append({
             "Active Time": str(self.active_time),
             "Fan Level": self.fan_level,
             "Air Quality": self.air_quality,
             "Mode": self.mode,
             "Screen Status": self.screen_status,
             "Filter Life": str(self.filter_life)
-            })
-        return supVal
+        })
+        return sup_val

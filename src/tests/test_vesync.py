@@ -36,7 +36,7 @@ class TestVesync(unittest.TestCase):
     """Test VeSync object initialization."""
 
     def setUp(self):
-        """Setup VeSync argument cases."""
+        """Instantiate VeSync classes."""
         self.vesync_1 = VeSync('sam@email.com', 'password', 'America/New_York')
         self.vesync_2 = VeSync('sam@email.com', 'password')
         self.vesync_3 = VeSync('sam@email.com', 'password', None)

@@ -5,7 +5,7 @@ import logging
 import time
 import requests
 
-logger = logging.getLogger(__name__)
+_LOGGER = logging.getLogger(__name__)
 
 API_BASE_URL = 'https://smartapi.vesync.com'
 API_RATE_LIMIT = 30
@@ -161,7 +161,7 @@ class Helpers:
         status_code = None
 
         try:
-            logger.debug("[%s] calling '%s' api", method, api)
+            _LOGGER.debug("[%s] calling '%s' api", method, api)
             if method == 'get':
                 r = requests.get(
                     API_BASE_URL + api, json=json,
@@ -178,17 +178,15 @@ class Helpers:
                     headers=headers, timeout=API_TIMEOUT
                 )
         except requests.exceptions.RequestException as e:
-            logger.waring(e)
-        except Exception as e:
-            logger.warning(e)
+            _LOGGER.waring(e)
         else:
             if r.status_code == 200:
                 status_code = 200
                 response = r.json()
             else:
-                logger.debug('Unable to fetch %s%s', API_BASE_URL, api)
+                _LOGGER.debug('Unable to fetch %s%s', API_BASE_URL, api)
         finally:
-            return (response, status_code)
+            return (response, status_code)  # pylint: disable=W0150
 
     @staticmethod
     def code_check(r: dict) -> bool:

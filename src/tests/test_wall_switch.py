@@ -1,8 +1,12 @@
-import pytest
-from unittest.mock import patch
+"""Test cases for VeSync Wall Switches."""
+
 import logging
+from unittest.mock import patch
+
+import pytest
 from pyvesync_v2 import VeSync, VeSyncWallSwitch
 from pyvesync_v2.helpers import Helpers as helpers
+
 from . import call_json
 
 DEV_LIST_DETAIL = call_json.LIST_CONF_WS
@@ -17,8 +21,11 @@ BAD_LIST = call_json.DETAILS_BADCODE
 
 
 class TestVesyncWallSwitch(object):
+    """Class to test Etekcity wall switches."""
+
     @pytest.fixture()
     def api_mock(self, caplog):
+        """Mock call_api method and instantiate VeSync class."""
         self.mock_api_call = patch('pyvesync_v2.helpers.Helpers.call_api')
         self.mock_api = self.mock_api_call.start()
         self.mock_api.create_autospect()
@@ -33,7 +40,7 @@ class TestVesyncWallSwitch(object):
         self.mock_api_call.stop()
 
     def test_ws_conf(self, api_mock):
-        """Tests that Wall Switch is instantiated properly"""
+        """Tests that Wall Switch is instantiated properly."""
         self.mock_api.return_value = CORRECT_WS_LIST
         devices = self.vesync_obj.get_devices()
         switch = devices[1]
@@ -46,7 +53,7 @@ class TestVesyncWallSwitch(object):
         assert wswitch.uuid == "UUID"
 
     def test_ws_details(self, api_mock):
-        """Test WS get_details() """
+        """Test WS get_details()."""
         self.mock_api.return_value = CORRECT_WS_DETAILS
         wswitch = VeSyncWallSwitch(DEV_LIST_DETAIL, self.vesync_obj)
         wswitch.get_details()
@@ -57,7 +64,7 @@ class TestVesyncWallSwitch(object):
         assert wswitch.connection_status == 'online'
 
     def test_ws_details_fail(self, caplog, api_mock):
-        """Test WS get_details with Code>0"""
+        """Test WS get_details with Code>0."""
         self.mock_api.return_value = BAD_LIST
         vswitch15a = VeSyncWallSwitch(DEV_LIST_DETAIL, self.vesync_obj)
         vswitch15a.get_details()
@@ -65,7 +72,7 @@ class TestVesyncWallSwitch(object):
         assert 'details' in caplog.text
 
     def test_ws_onoff(self, caplog, api_mock):
-        """Test 15A Device On/Off Methods"""
+        """Test 15A Device On/Off Methods."""
         self.mock_api.return_value = ({"code": 0}, 200)
         wswitch = VeSyncWallSwitch(DEV_LIST_DETAIL, self.vesync_obj)
         head = helpers.req_headers(self.vesync_obj)
@@ -90,7 +97,7 @@ class TestVesyncWallSwitch(object):
         assert off
 
     def test_ws_onoff_fail(self, api_mock):
-        """Test ws On/Off Fail with Code>0"""
+        """Test ws On/Off Fail with Code>0."""
         self.mock_api.return_value = ({"code": 1}, 400)
         vswitch15a = VeSyncWallSwitch(DEV_LIST_DETAIL, self.vesync_obj)
         assert not vswitch15a.turn_on()
