@@ -54,5 +54,10 @@ jobs:
     displayName: 'Install dependencies'
   - script: |
       pip install pytest pytest-azurepipelines
-      pytest
-    displayName: 'pytest'
+      pytest --junitxml=reports/pytest.xml
+    displayName: 'Run Tests'
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFiles: 'reports/pytest.xml'
+      testRunTitle: '$(Agent.OS) - $(Builld.DefinitionName) - Python $(python.version)'
+    condition: succeededOrFailed()
