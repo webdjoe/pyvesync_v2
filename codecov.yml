@@ -7,4 +7,6 @@ coverage:
   round: up
   range: 70..100
 
-comment: off
+comment:
+  branches:
+    - null
