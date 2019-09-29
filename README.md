@@ -217,12 +217,12 @@ The rectangular smart switch model supports some additional functionality on top
 
 ### JSON Output API
 
-The `device.displayJSON()` method outputs properties and status of the device
+The `device.display_json()` method outputs properties and status of the device
 
 #### JSON Output for All Devices
 
 ```python
-device.displayJSON()
+device.display_json()
 
 #Returns:
 

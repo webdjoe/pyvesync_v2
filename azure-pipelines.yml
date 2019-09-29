@@ -4,31 +4,61 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/python
 
 trigger:
-- master
+  branches:
+    include:
+    - '*'
+pr:
+  - '*'
 
-pool:
-  vmImage: 'ubuntu-latest'
-strategy:
-  matrix:
-    Python35:
-      python.version: '3.5'
-    Python36:
-      python.version: '3.6'
-    Python37:
-      python.version: '3.7'
+jobs:
+- job: 'Validation'
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.5'
+    displayName: 'Use Python 3.5'
+  - script: |
+      python -m pip install --upgrade pip
+      pip install -r requirements.txt
+    displayName: 'Install dependencies'
+  - script: |
+      pip install flake8 flake8-docstrings
+      flake8 src
+    displayName: 'Flake8'
+  - script: |
+      pip install pylint
+      pylint src/pyvesync_v2
+    displayName: 'Pylint'
 
-steps:
-- task: UsePythonVersion@0
-  inputs:
-    versionSpec: '$(python.version)'
-  displayName: 'Use Python $(python.version)'
+- job: 'pytest'
+  pool:
+    vmImage: 'ubuntu-latest'
+  strategy:
+    matrix:
+      Python35:
+        python.version: '3.5'
+      Python36:
+        python.version: '3.6'
+      Python37:
+        python.version: '3.7'
 
-- script: |
-    python -m pip install --upgrade pip
-    pip install -r requirements.txt
-  displayName: 'Install dependencies'
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '$(python.version)'
+    displayName: 'Use Python $(python.version)'
 
-- script: |
-    pip install pytest pytest-azurepipelines
-    pytest
-  displayName: 'pytest'
+  - script: |
+      set -e
+      python -m pip install --upgrade pip
+      pip install -r requirements.txt
+      pip install -U pytest pytest-azurepipelines pytest-sugar pytest-cov codecov
+    displayName: 'Install dependencies'
+  - script: |
+      pytest --junitxml=reports/pytest.xml
+    displayName: 'Run Tests'
+  - script: |
+      pytest --cov src/pyvesync_v2 --cov-report html -qq -o console_output_style=count -p no:sugar src/tests
+      codecov --token $(codecov)
+    displayName: 'Run Test Coverage'
+    condition: and(succeeded(), eq(variables['python.version'], '3.5'))

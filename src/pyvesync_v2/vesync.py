@@ -11,7 +11,7 @@ from pyvesync_v2.vesyncswitch import VeSyncWallSwitch, VeSyncDimmerSwitch
 from pyvesync_v2.vesyncfan import VeSyncAir131
 from pyvesync_v2.vesyncbulb import VeSyncBulbESL100, VeSyncBulbESL100CW
 
-logger = logging.getLogger(__name__)
+_LOGGER = logging.getLogger(__name__)
 
 API_RATE_LIMIT = 30
 DEFAULT_TZ = 'America/New_York'
@@ -39,7 +39,7 @@ def get_device(device_type, config, manager):
         return VeSyncBulbESL100CW(config, manager)
     if device_type == 'ESWD16':
         return VeSyncDimmerSwitch(config, manager)
-    logger.debug('Unknown device found - %s', device_type)
+    _LOGGER.debug('Unknown device found - %s', device_type)
     return None
 
 
@@ -68,12 +68,13 @@ class VeSync:
             reg_test = r"[^a-zA-Z/_]"
             if bool(re.search(reg_test, time_zone)):
                 self.time_zone = DEFAULT_TZ
-                logger.debug("Invalid characters in time zone - %s", time_zone)
+                _LOGGER.debug(
+                    "Invalid characters in time zone - %s", time_zone)
             else:
                 self.time_zone = time_zone
         else:
             self.time_zone = DEFAULT_TZ
-            logger.debug("Time zone is not a string")
+            _LOGGER.debug("Time zone is not a string")
 
     @property
     def energy_update_interval(self) -> int:
@@ -97,10 +98,10 @@ class VeSync:
                         device_found = True
                         break
                 else:
-                    logger.error('No cid found in - %s', str(item))
+                    _LOGGER.error('No cid found in - %s', str(item))
             if not device_found:
-                logger.debug("Device removed - %s - %s",
-                             device.device_name, device.device_type)
+                _LOGGER.debug("Device removed - %s - %s", device.device_name,
+                              device.device_type)
                 return False
         return True
 
@@ -115,7 +116,7 @@ class VeSync:
                     was_found = True
                     break
             if not was_found:
-                logger.debug("Adding device - %s", new_dev)
+                _LOGGER.debug("Adding device - %s", new_dev)
                 return True
         return False
 
@@ -137,29 +138,33 @@ class VeSync:
             + len(self.bulbs)
 
         if not num_devices and devices:
-            logger.debug('New device list initialized')
+            _LOGGER.debug('New device list initialized')
         elif not devices:
-            logger.warning('No devices found in api return')
+            _LOGGER.warning('No devices found in api return')
         else:
-            self.outlets[:] = [x for x in self.outlets if self.remove_dev_test(
-                x, devices)]
+            self.outlets[:] = [
+                x for x in self.outlets if self.remove_dev_test(x, devices)
+            ]
             for dev in self.outlets:
-                logger.debug('Outlets updated - %s', str(dev))
+                _LOGGER.debug('Outlets updated - %s', str(dev))
 
-            self.fans[:] = [x for x in self.fans if self.remove_dev_test(
-                x, devices)]
+            self.fans[:] = [
+                x for x in self.fans if self.remove_dev_test(x, devices)
+            ]
             for dev in self.fans:
-                logger.debug('Fans Updated - %s', str(dev))
+                _LOGGER.debug('Fans Updated - %s', str(dev))
 
-            self.switches[:] = [x for x in self.switches if
-                                self.remove_dev_test(x, devices)]
+            self.switches[:] = [
+                x for x in self.switches if self.remove_dev_test(x, devices)
+            ]
             for dev in self.switches:
-                logger.debug('Switches Updated - %s', str(dev))
+                _LOGGER.debug('Switches Updated - %s', str(dev))
 
-            self.bulbs[:] = [x for x in self.bulbs if self.remove_dev_test(
-                x, devices)]
+            self.bulbs[:] = [
+                x for x in self.bulbs if self.remove_dev_test(x, devices)
+            ]
             for dev in self.bulbs:
-                logger.debug('Bulbs - %s', str(dev))
+                _LOGGER.debug('Bulbs - %s', str(dev))
 
             devices[:] = [x for x in devices if self.add_dev_test(x)]
 
@@ -176,9 +181,9 @@ class VeSync:
                 elif dev_type in bulb_types:
                     bulbs.append(get_device(dev_type, dev, self))
                 else:
-                    logger.warning('Unknown device %s', dev_type)
+                    _LOGGER.warning('Unknown device %s', dev_type)
             else:
-                logger.error('Details keys not found %s', str(dev))
+                _LOGGER.error('Details keys not found %s', str(dev))
 
         return outlets, switches, fans, bulbs
 
@@ -193,12 +198,11 @@ class VeSync:
 
         self.in_process = True
 
-        response, _ = helpers.call_api(
-            '/cloud/v1/deviceManaged/devices',
-            'post',
-            headers=helpers.req_headers(self),
-            json=helpers.req_body(self, 'devicelist')
-        )
+        response, _ = helpers.call_api('/cloud/v1/deviceManaged/devices',
+                                       'post',
+                                       headers=helpers.req_headers(self),
+                                       json=helpers.req_body(
+                                           self, 'devicelist'))
 
         if response and helpers.code_check(response):
             if 'result' in response and 'list' in response['result']:
@@ -206,9 +210,9 @@ class VeSync:
                 outlets, switches, fans, bulbs = self.process_devices(
                     device_list)
             else:
-                logger.error('Device list in response not found')
+                _LOGGER.error('Device list in response not found')
         else:
-            logger.warning('Error retrieving device list')
+            _LOGGER.warning('Error retrieving device list')
 
         self.in_process = False
 
@@ -219,17 +223,15 @@ class VeSync:
         user_check = isinstance(self.username, str) and len(self.username) > 0
         pass_check = isinstance(self.password, str) and len(self.password) > 0
         if user_check is False:
-            logger.error('Username invalid')
+            _LOGGER.error('Username invalid')
             return False
         if pass_check is False:
-            logger.error('Password invalid')
+            _LOGGER.error('Password invalid')
             return False
 
-        response, _ = helpers.call_api(
-            '/cloud/v1/user/login',
-            'post',
-            json=helpers.req_body(self, 'login')
-        )
+        response, _ = helpers.call_api('/cloud/v1/user/login',
+                                       'post',
+                                       json=helpers.req_body(self, 'login'))
 
         if helpers.code_check(response) and 'result' in response:
             self.token = response.get('result').get('token')
@@ -237,7 +239,7 @@ class VeSync:
             self.enabled = True
 
             return True
-        logger.error('Error logging in with username and password')
+        _LOGGER.error('Error logging in with username and password')
         return False
 
     def device_time_check(self) -> bool:
@@ -251,7 +253,7 @@ class VeSync:
         """Fetch updated information about devices."""
         if self.device_time_check():
 
-            if not self.in_process:
+            if not self.in_process and self.enabled:
                 outlets, switches, fans, bulbs = self.get_devices()
 
                 self.outlets.extend(outlets)
@@ -261,9 +263,12 @@ class VeSync:
 
                 devices = [self.outlets, self.bulbs, self.switches, self.fans]
 
-                [device.update() for device in chain(*devices)]
+                for device in chain(*devices):
+                    device.update()
 
                 self.last_update_ts = time.time()
+            else:
+                _LOGGER.error('You are not logged in to VeSync')
 
     def update_energy(self, bypass_check=False):
         """Fetch updated energy information about devices."""

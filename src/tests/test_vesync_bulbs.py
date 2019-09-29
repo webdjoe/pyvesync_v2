@@ -1,3 +1,5 @@
+"""Tests for VeSync light bulbs."""
+
 import logging
 from unittest.mock import patch
 
@@ -70,15 +72,18 @@ class TestVeSyncBulbESL100:
         assert bulb.turn_on()
 
     def test_brightness(self, api_mock):
+        """Test changines brightness success."""
         self.mock_api.return_value = ({'code': 0}, 200)
         bulb = VeSyncBulbESL100(DEV_LIST_DETAIL, self.vesync_obj)
         assert bulb.set_brightness(50)
 
     def test_invalid_brightness(self, caplog, api_mock):
+        """Pass invalid brightness to set_brightness."""
         bulb = VeSyncBulbESL100(DEV_LIST_DETAIL, self.vesync_obj)
         assert not bulb.set_brightness(5000)
 
     def test_features(self, api_mock):
+        """Check if the correct features are set for the appropriate model."""
         bulb = VeSyncBulbESL100(DEV_LIST_DETAIL, self.vesync_obj)
         assert bulb.dimmable_feature
         assert not bulb.color_temp_feature

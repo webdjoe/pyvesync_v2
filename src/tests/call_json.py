@@ -1,3 +1,5 @@
+"""Reference API Calls header and body for tests."""
+
 import time
 import pyvesync_v2.helpers as helpers
 
@@ -104,6 +106,7 @@ LOGIN_RET_BODY = ({
 
 
 def login_call_body(email, password):
+    """JSON body for login call."""
     json = {
         "acceptLanguage": "en",
         "appVersion": APP_VERSION,
@@ -287,6 +290,7 @@ FULL_DEV_LIST = [
 
 
 def get_devices_body():
+    """JSON of api call to get list of devices."""
     body = DEFAULT_BODY
     body['method'] = 'devices'
     return (body, 200)
@@ -317,6 +321,7 @@ DEVLIST_OUTDOOR = ({
 
 
 def get_details_body():
+    """JSON body of the api call to get device details."""
     body = DEFAULT_BODY
     body['method'] = 'deviceDetail'
     return (body, 200)
@@ -446,12 +451,14 @@ STATUS_BODY = {
 
 
 def off_body():
+    """JSON of api call to turn device off."""
     body = STATUS_BODY
     body['status'] = 'off'
     return (body, 200)
 
 
 def on_body(cls):
+    """JSON of api call to turn device on."""
     body = STATUS_BODY
     body['status'] = 'on'
     return (body, 200)

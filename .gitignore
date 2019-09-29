@@ -1,7 +1,7 @@
 *.DS_Store
 build/*
 dist/*
-src/pyvesync.egg-info/*
+src/pyvesync_v2.egg-info/*
 *.vscode
 **/*.pyc
 .coverage
@@ -10,3 +10,4 @@ htmlcov/
 *__pycache__
 cov_html/*
 cov_html/
+.tox

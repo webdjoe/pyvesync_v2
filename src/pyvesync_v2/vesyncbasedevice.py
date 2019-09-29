@@ -3,10 +3,10 @@
 import logging
 import collections
 import json
-logger = logging.getLogger(__name__)
+_LOGGER = logging.getLogger(__name__)
 
 
-class VeSyncBaseDevice(object):
+class VeSyncBaseDevice:
     """Properties shared across all VeSync devices."""
 
     def __init__(self, details, manager):
@@ -35,28 +35,26 @@ class VeSyncBaseDevice(object):
                 self.device_status = details.get('deviceStatus', None)
 
         else:
-            logger.error('No cid found for ' + self.__class__.__name__)
+            _LOGGER.error('No cid found for %s', self.__class__.__name__)
 
     def __eq__(self, other):
         """Use device CID and subdevice number to test equality."""
-        if other.cid == self.cid and other.sub_device_no == self.sub_device_no:
-            return True
-        else:
-            return False
+        return bool(other.cid == self.cid
+                    and other.sub_device_no == self.sub_device_no)
 
     def __hash__(self):
         """Use CID and sub-device number to make device hash."""
         if isinstance(self.sub_device_no, int) and self.sub_device_no > 0:
             return hash(self.cid + str(self.sub_device_no))
-        else:
-            return hash(self.cid)
+        return hash(self.cid)
 
     def __str__(self):
         """Use device info for string represtation of class."""
         return "Device Name: {}, Device Type: {},\
-            SubDevice No.: {} Status: {}".format(
-            self.device_name, self.device_type, self.sub_device_no,
-            self.device_status)
+            SubDevice No.: {} Status: {}".format(self.device_name,
+                                                 self.device_type,
+                                                 self.sub_device_no,
+                                                 self.device_status)
 
     def __repr__(self):
         """Representation of device details."""
@@ -80,8 +78,7 @@ class VeSyncBaseDevice(object):
             if cfv != lfv:
                 return True
         else:
-            logger.warning(
-                'Call device.get_config() to get firmware versions')
+            _LOGGER.warning('Call get_config() to get firmware versions')
         return False
 
     def display(self):
@@ -101,7 +98,7 @@ class VeSyncBaseDevice(object):
         for k, v in disp1.items():
             print("{:.<15} {:<15}".format(k, v))
 
-    def displayJSON(self):
+    def display_json(self):
         """JSON API for device details."""
         return json.dumps({
             'Device Name': self.device_name,
@@ -111,4 +108,4 @@ class VeSyncBaseDevice(object):
             'Online': self.connection_status,
             'Type': self.type,
             'CID': self.cid
-            })
+        })

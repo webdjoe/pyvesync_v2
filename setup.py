@@ -3,6 +3,7 @@
 from setuptools import setup, find_packages
 from os import path
 
+from pyvesync_v2 import const as pv_const
 
 this_directory = path.abspath(path.dirname(__file__))
 with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
@@ -10,7 +11,7 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='pyvesync_v2',
-    version='2.0.0',
+    version=pv_const.__VERSION__,
     description='pyvesync_v2 is a library to manage Etekcity Switches',
     long_description=long_description,
     long_description_content_type='text/markdown',
@@ -30,5 +31,5 @@ setup(
     package_dir={'': "src"},
     zip_safe=False,
     install_requires=['requests>=2.20.0'],
-    python_requires='>=3.5'
+    python_requires='>=3.5',
 )
