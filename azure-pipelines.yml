@@ -49,15 +49,21 @@ jobs:
     displayName: 'Use Python $(python.version)'
 
   - script: |
+      set -e
       python -m pip install --upgrade pip
       pip install -r requirements.txt
+      pip install -U pytest pytest-azurepipelines pytest-sugar pytest-cov codecov
     displayName: 'Install dependencies'
   - script: |
-      pip install pytest pytest-azurepipelines
       pytest --junitxml=reports/pytest.xml
     displayName: 'Run Tests'
+  - script: |
+      pytest --cov src/pyvesync_v2 --cov-report html -qq -o console_output_style=count -p no:sugar src/tests
+      codecov --token $(codecov)
+    displayName: 'Run Test Coverage'
+    condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs'))
   - task: PublishTestResults@2
     inputs:
       testResultsFiles: 'reports/pytest.xml'
-      testRunTitle: '$(Agent.OS) - $(Builld.DefinitionName) - Python $(python.version)'
+      testRunTitle: '$(Agent.OS) - $(Build.SourceBranch) - Python $(python.version)'
     condition: succeededOrFailed()
