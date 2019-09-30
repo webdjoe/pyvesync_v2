@@ -1,5 +1,7 @@
 # pyvesync_v2
 
+[![Python 3.5+](https://img.shields.io/badge/python-3.5-blue.svg)](https://www.python.org/downloads/release/python/) [![https://img.shields.io/azure-devops/build/webdjoe/c13ec6f6-2149-46a0-95ba-98bdd60eed28/1](https://img.shields.io/azure-devops/build/webdjoe/c13ec6f6-2149-46a0-95ba-98bdd60eed28/1)](https://dev.azure.com/jtrabulsy/pyvesync_v2/_build?definitionId=1&_a=summary) [![codecov](https://codecov.io/gh/webdjoe/pyvesync_v2/branch/master/graph/badge.svg)](https://codecov.io/gh/webdjoe/pyvesync_v2) [![PYPI](https://img.shields.io/pypi/v/pyvesync_v2)](https://pypi.org/project/pyvesync-v2/)
+
 pyvesync_v2 is a library to manage VeSync compatible [smart home devices](#supported-devices)
 
 ***Only compatible with python 3.5+***
