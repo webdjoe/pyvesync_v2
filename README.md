@@ -34,7 +34,6 @@ pyvesync_v2 is a library to manage VeSync compatible [smart home devices](#suppo
   - [Energy History Data](#energy-history-data)
   - [Development](#development)
     - [Running Tests](#running-tests)
-    - [Pull Requests](#pull-requests)
 
 ## Installation
 
@@ -328,7 +327,3 @@ Individual tests can be run with the `-e` flag:
 ```bash
 $ tox -e py35
 ```
-
-### Pull Requests
-
-Please sumbit all pull requests with the `dev` branch
