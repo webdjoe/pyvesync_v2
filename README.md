@@ -31,8 +31,10 @@ pyvesync_v2 is a library to manage VeSync compatible [smart home devices](#suppo
       - [JSON Output for Dimmable Switch](#json-output-for-dimmable-switch)
       - [JSON Output for Bulbs](#json-output-for-bulbs)
       - [JSON Output for Air Purifier](#json-output-for-air-purifier)
-  - [Notes](#notes)
-  - [Integration with Home Assistant](#integration-with-home-assistant)
+  - [Energy History Data](#energy-history-data)
+  - [Development](#development)
+    - [Running Tests](#running-tests)
+    - [Pull Requests](#pull-requests)
 
 ## Installation
 
@@ -296,7 +298,7 @@ This output only applies to dimmable switch.  The standard switch has the defaul
 }
 ```
 
-## Notes
+## Energy History Data
 
 More detailed data is available within the `VesyncOutlet` by inspecting the `VesyncOutlet.energy` dictionary.
 
@@ -310,32 +312,23 @@ VesyncOutlet.energy['week']['total_energy']
 VesyncOutlet.energy['week']['data'] # which itself is a list of values
 ```
 
-## Integration with Home Assistant
+## Development
 
-This library is integrated with Home Assistant and documentation can be found at <https://www.home-assistant.io/components/vesync/>. The library version included with Home Assistant may lag behind development compared to this repository so those wanting to use the latest version can do the following to integrate with HA.
+### Running Tests
 
-1. Add a `custom_components` directory to your Home Assistant configuration directory
-2. Add a `vesync` directory as a directory within `custom_components`
-3. Add `switch.py` to the `vesync` directory
-4. Add `__init__.py` to the `vesync` directory
-5. Add `manifest.json` to the `vesync` directory
-6. Add the following config to your Home Assistant `configuration.yaml` file:
+Test can be run with tox for python 3.5, 3.6 and 3.7.  It will also run pylint and flake8 to test for style and formatting.
 
-```python
-vesync:
-  username: VESYNC_USERNAME
-  password: VESYNC_PASSWORD
-```
-
-1. Restart Home Assistant
-
-The `custom_components` directory should include the following files:
+Run all tests:
 
 ```bash
-custom_components/vesync/__init__.py
-custom_components/vesync/switch.py
-custom_components/vesync/fan.py
-custom_components/vesync/manifest.json
+$ tox
 ```
 
-The version of the library defined in `manifest.json` should now get loaded within Home Assistant.
+Individual tests can be run with the `-e` flag:
+```bash
+$ tox -e py35
+```
+
+### Pull Requests
+
+Please sumbit all pull requests with the `dev` branch
