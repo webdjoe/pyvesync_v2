@@ -11,7 +11,7 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='pyvesync_v2',
-    version=pv_const.__VERSION__,
+    version='0.9.9',
     description='pyvesync_v2 is a library to manage Etekcity Switches',
     long_description=long_description,
     long_description_content_type='text/markdown',
