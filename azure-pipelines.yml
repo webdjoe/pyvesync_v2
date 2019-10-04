@@ -7,6 +7,8 @@ trigger:
   branches:
     include:
     - '*'
+    exclude:
+    - 'master'
 pr:
   - '*'
 
@@ -58,7 +60,7 @@ jobs:
       pytest --junitxml=reports/pytest.xml
     displayName: 'Run Tests'
   - script: |
-      pytest --cov src/pyvesync_v2 --cov-report html -qq -o console_output_style=count -p no:sugar src/tests
+      pytest --cov src/pyvesync_v2 --cov-report html --cov-report xml -qq -o console_output_style=count -p no:sugar src/tests
       codecov --token $(codecov)
     displayName: 'Run Test Coverage'
     condition: and(succeeded(), eq(variables['python.version'], '3.5'))
