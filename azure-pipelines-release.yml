@@ -5,3 +5,13 @@
 
 trigger: none
 
+jobs:
+- job: 'Process Commit'
+  pool:
+    vmImage: 'ubuntu-latest'
+  steps:
+  - task: BuildType@1
+    name: BuildName
+  - script: |
+    apt-get install -y --no-install recommends jq curl
+
