@@ -321,9 +321,12 @@ Run all tests:
 
 ```bash
 $ tox
+# Tests for python3.5, 3.6, 3.7, pylint and flake8 succeeded
 ```
 
 Individual tests can be run with the `-e` flag:
+
 ```bash
 $ tox -e py35
+# Tests for Python 3.5 succeeded
 ```

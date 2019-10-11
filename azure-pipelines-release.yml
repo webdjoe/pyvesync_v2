@@ -10,8 +10,27 @@ jobs:
   pool:
     vmImage: 'ubuntu-latest'
   steps:
-  - task: BuildType@1
-    name: BuildName
-  - script: |
-    apt-get install -y --no-install recommends jq curl
+  - task: UsePythonVersion@0
+    name: BumpPart
+    inputs:
+      versionSpec: '3.7'
+  - bash: |
+      echo "Finding version bump part from commit message"
+      message="$(Build.SourceVersionMessage)"
+      part="$(echo $message | cut -c 2-6)"
+      case "$part"
+      in
+        'major' ) echo "##vso[task.setvariable variable=bump_part]major";;
+        'minor' ) echo "##vso[task.setvariable variable=bump_part]minor";;
+        'patch' ) echo "##vso[task.setvariable variable=bump_part]patch";;
+        * ) echo "Invalid bump part - $part"
+            exit 1;;
+      esac
+    displayName: Get Version Part from Commit Message
+  - bash: |
+      python -m pip install --upgrade pip && \
+        pip install bump2version
+    condition: in(variables.bump_part, 'Minor', 'Major', 'Patch')
+
+      curl -s "https://api.github.com/repos/webdjoe/pyvesync_v2/issues/12/labels" | jq '.[0].name'
 
