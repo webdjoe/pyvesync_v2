@@ -16,6 +16,7 @@ jobs:
       versionSpec: '3.7'
   - bash: |
       echo "Finding version bump part from commit message"
+      echo "$(Build.SourceVersionMessage)"
       message="$(Build.SourceVersionMessage)"
       part="$(echo $message | cut -c 2-6)"
       case "$part"
@@ -35,4 +36,4 @@ jobs:
       git config user.name "Pipeline Push"
       git push --tags
       git push origin master
-    condition: in(variables.bump_part, 'Minor', 'Major', 'Patch')
+    condition: in(variables.bump_part, 'minor', 'major', 'patch')
