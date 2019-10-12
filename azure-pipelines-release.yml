@@ -27,6 +27,7 @@ jobs:
         * ) echo "Invalid bump part - $part"
             exit 1;;
       esac
+      echo $part
     displayName: Get Version Part from Commit Message
   - bash: |
       python -m pip install --upgrade pip && \
