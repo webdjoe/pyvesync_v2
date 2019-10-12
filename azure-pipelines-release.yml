@@ -29,9 +29,9 @@ jobs:
             exit 1;;
       esac
       echo Part "$part"
-      echo Bump_Part "$(bump_part)"
-      echo Part2 "$(part)"
-      echo bump_part2 "$bump_part"
+      echo Bump_Part $(bump_part)
+      echo bump_part2 $bump_part
+      echo $(gitemail)
       
       # python -m pip install --upgrade pip && \
       #  pip install bump2version
