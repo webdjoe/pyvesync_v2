@@ -18,7 +18,7 @@ jobs:
       echo "Finding version bump part from commit message"
       echo "$(Build.SourceVersionMessage)"
       message="$(Build.SourceVersionMessage)"
-      part="$(echo $message | cut -c 2-6)"
+      part="$(echo $message | cut -c 1-5)"
       case "$part"
       in
         'major' ) echo "##vso[task.setvariable variable=bump_part]major";;
