@@ -6,7 +6,7 @@
 trigger: none
 
 jobs:
-- job: 'Process Commit'
+- job: processCommit
   pool:
     vmImage: 'ubuntu-latest'
   steps:
