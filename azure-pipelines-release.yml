@@ -4,7 +4,8 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/python
 
 trigger: none
-
+variables:
+  - group: creds
 jobs:
 - job: processCommit
   pool:
@@ -32,9 +33,9 @@ jobs:
   - bash: |
       python -m pip install --upgrade pip && \
         pip install bump2version
-      bump2version $(part) --verbose
-      git config user.email $(gitemail)
-      git config user.name "Pipeline Push"
+      bump2version $(bump_part) --verbose
+      git config --global user.email $(gitemail)
+      git config --global user.name "Pipeline Push"
       git push --tags
-      git push origin master
+      git push
     condition: in(variables.bump_part, 'minor', 'major', 'patch')
