@@ -29,13 +29,15 @@ jobs:
             exit 1;;
       esac
       echo $part
-    displayName: Get Version Part from Commit Message
-  - bash: |
+      echo $bump_part
       python -m pip install --upgrade pip && \
         pip install bump2version
-      bump2version $(bump_part) --verbose
-      git config --global user.email $gitemail
+      bump2version $bump_part --verbose
+      git config --global user.email "$(gitemail)"
       git config --global user.name "Pipeline Push"
       git push --tags
       git push
+    displayName: Get Version Part from Commit Message
+  - bash: |
+      
     condition: in(variables.bump_part, 'minor', 'major', 'patch')
