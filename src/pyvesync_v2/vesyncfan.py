@@ -85,6 +85,18 @@ class VeSyncAir131(VeSyncBaseDevice):
         """Return Screen status (on/off)."""
         return self.details.get('screen_status', 'unknown')
 
+    def display_on(self) -> bool:
+        """Turn display on."""
+        if self.details['screen_status'] == 'off':
+            return self.display_toggle('on')
+        return True
+
+    def display_off(self) -> bool:
+        """Turn display off."""
+        if self.details['screen_status'] == 'on':
+            return self.display_toggle('off')
+        return True
+
     def turn_on(self):
         """Turn Air Purifier on."""
         if self.device_status != 'on':
@@ -232,3 +244,22 @@ class VeSyncAir131(VeSyncBaseDevice):
             "Filter Life": str(self.filter_life)
         })
         return sup_val
+
+    def display_toggle(self, mode: str) -> bool:
+        """Toggle the display on/off."""
+        if mode not in ['on', 'off']:
+            _LOGGER.warning("Invalid display power option for %s - %s",
+                            self.device_name, mode)
+            return False
+        head = helpers.req_headers(self.manager)
+        body = helpers.req_body(self.manager, 'devicestatus')
+        body['uuid'] = self.uuid
+        body['status'] = mode
+        r, _ = helpers.call_api('/131airPurifier/v1/device/updateScreen',
+                                'put',
+                                json=body,
+                                headers=head)
+
+        if r is not None and helpers.code_check(r):
+            self.details['screen_status'] = mode
+            return True
