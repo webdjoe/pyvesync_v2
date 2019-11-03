@@ -182,6 +182,10 @@ The rectangular smart switch model supports some additional functionality on top
 
 `VeSyncFan.screen_status` - Get Status of screen on/off
 
+`VesyncFan.display_on()` - Turn Display on
+
+`VesyncFan.display_off()` - Turn Display off
+
 ### Dimmable Smart Light Bulb Method and Properties
 
 `VeSyncBulb.brightness` - Return brightness in percentage (1 - 100)
