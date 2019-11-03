@@ -248,7 +248,7 @@ class VeSyncAir131(VeSyncBaseDevice):
     def display_toggle(self, mode: str) -> bool:
         """Toggle the display on/off."""
         if mode not in ['on', 'off']:
-            _LOGGER.warning("Invalid display option (on/off) - %s",
+            _LOGGER.warning("Invalid display power option for %s - %s",
                             self.device_name, mode)
             return False
         head = helpers.req_headers(self.manager)
