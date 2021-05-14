@@ -4,6 +4,9 @@
 
 pyvesync_v2 is a library to manage VeSync compatible [smart home devices](#supported-devices)
 
+#  This library is depreciated - Please see [PyVesync](https://github.com/webdjoe/pyvesync)
+
+
 ***Only compatible with python 3.5+***
 
 ## Table of Contents
