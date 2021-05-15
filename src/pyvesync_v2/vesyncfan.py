@@ -235,7 +235,7 @@ class VeSyncAir131(VeSyncBaseDevice):
         """Return air purifier status and properties in JSON output."""
         sup = super().display_json()
         sup_val = json.loads(sup)
-        sup_val.append({
+        sup_val.update({
             "Active Time": str(self.active_time),
             "Fan Level": self.fan_level,
             "Air Quality": self.air_quality,
